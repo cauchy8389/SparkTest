@@ -11,7 +11,8 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 object MyRDD {
   def main(args: Array[String]): Unit = {
-    System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5")
+    //System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5")
+
     val conf  = new SparkConf()
     conf.setMaster("local")
     conf.setAppName("wordcount")
