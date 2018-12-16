@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<!--输出信息设置-->
+	<property>
+	  <name>hive.cli.print.header</name>
+	  <value>true</value>
+	  <description>打印表头</description>
+	</property>
+
+	<property>
+	  <name>hive.cli.print.current.db</name>
+	  <value>true</value>
+	  <description>打印库名</description>
+	</property>
+
+	<!--对外接口-->
+	<property>
+	  <name>hive.metastore.uris</name>
+	  <value>thrift://candle.hwua.com:9083</value>
+	  <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
+	</property>	
+
+	<!--元数据存放到mysql中的位置-->
+	<property>
+	  <name>javax.jdo.option.ConnectionURL</name>
+	  <value>jdbc:mysql://candle.hwua.com:3306/hive?createDatabaseIfNotExist=true</value>
+	  <description>如果mysql没有该DATABASE那么就创建</description>
+	</property>
+
+	<property>
+	  <name>javax.jdo.option.ConnectionDriverName</name>
+	  <value>com.mysql.jdbc.Driver</value>
+	  <description>Driver class name for a JDBC metastore</description>
+	</property>
+
+	<property>
+	  <name>javax.jdo.option.ConnectionUserName</name>
+	  <value>hive</value>
+	  <description>username to use against metastore database</description>
+	</property>
+
+	<property>
+	  <name>javax.jdo.option.ConnectionPassword</name>
+	  <value>hive</value>
+	  <description>password to use against metastore database</description>
+	</property>
+
+	<!--更改 HIVE真实数据存放的位置 路径是HDFS文件路径 -->
+	<property>
+	  <name>hive.metastore.warehouse.dir</name>
+	  <value>/user/candle/hive/warehouse</value>
+	  <description>location of default database for the warehouse</description>
+	</property>
+
+	<!--并行处理任务-->
+	<property>
+	  <name>hive.exec.parallel</name>
+	  <value>true</value>
+	  <description>Whether to execute jobs in parallel</description>
+	</property>
+
+</configuration>
