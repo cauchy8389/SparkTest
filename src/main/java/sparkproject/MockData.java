@@ -147,10 +147,6 @@ public class MockData {
         df2.registerTempTable("user_info");
     }
 
-    private static final String FORMATE_DATE = "yyyy-MM-dd";
-    private static final String FORMATE_SECONDS = "HH:mm:ss";
-    private static final String FORMATE_FULL = FORMATE_DATE.concat(" ").concat(FORMATE_SECONDS);
-
     public static void main(String[] args) {
         System.out.println(StringUtils.leftPad("adfff",2, '0'));
         Random random = new Random();
@@ -167,7 +163,7 @@ public class MockData {
         LocalDateTime preDate = curDate.plusDays(-1);
         LocalDateTime nextDate = curDate.plus(1, ChronoUnit.DAYS);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(FORMATE_FULL);
+        DateTimeFormatter formatter = ParamUtils.FORMATTER_DATETIMES;
         //formatter.
         System.out.println(preDate.format(formatter));
         System.out.println(curDate.format(DateTimeFormatter.ISO_DATE));
@@ -186,7 +182,7 @@ public class MockData {
         LocalDate holiday = LocalDate.parse("2018-12-25", DateTimeFormatter.ISO_DATE);
         ZoneId zoneId = ZoneId.systemDefault();
 
-        LocalDateTime ldtHoliday = LocalDateTime.from(holiday.atStartOfDay());
+        LocalDateTime ldtHoliday = holiday.atStartOfDay();
         ZonedDateTime zdt = ldtHoliday.atZone(zoneId);
         Date date = Date.from(zdt.toInstant());
 
@@ -196,4 +192,5 @@ public class MockData {
 
         //zhy comment
     }
+
 }
