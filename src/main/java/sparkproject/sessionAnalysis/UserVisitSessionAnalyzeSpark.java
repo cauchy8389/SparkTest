@@ -1,18 +1,9 @@
 package sparkproject.sessionAnalysis;
 
-import it.unimi.dsi.fastutil.ints.IntList;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Optional;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkConf;
@@ -20,38 +11,22 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.api.java.function.*;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.storage.StorageLevel;
-
 import scala.Tuple2;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Optional;
-import sparkproject.ConfigurationManager;
-import sparkproject.Constants;
-import sparkproject.dao.ISessionAggrStatDAO;
-import sparkproject.dao.ISessionDetailDAO;
-import sparkproject.dao.ISessionRandomExtractDAO;
-import sparkproject.dao.ITaskDAO;
-import sparkproject.dao.ITop10CategoryDAO;
-import sparkproject.dao.ITop10SessionDAO;
+import sparkproject.*;
+import sparkproject.dao.*;
 import sparkproject.dao.factory.DAOFactory;
-import sparkproject.domain.SessionAggrStat;
-import sparkproject.domain.SessionDetail;
-import sparkproject.domain.SessionRandomExtract;
-import sparkproject.domain.Task;
-import sparkproject.domain.Top10Category;
-import sparkproject.domain.Top10Session;
-import sparkproject.ParamUtils;
-import sparkproject.SparkUtils;
-import sparkproject.ValidUtils;
+import sparkproject.domain.*;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * 用户访问session分析Spark作业
@@ -84,6 +59,8 @@ import sparkproject.ValidUtils;
 public class UserVisitSessionAnalyzeSpark {
 	
 	public static void main(String[] args) {
+        System.setProperty("hadoop.home.dir", "F:\\hadoop-2.6.0-cdh5.8.5");
+
 		// 构建Spark上下文
 		SparkConf conf = new SparkConf()
 				.setAppName(Constants.SPARK_APP_NAME_SESSION)
@@ -1638,15 +1615,31 @@ public class UserVisitSessionAnalyzeSpark {
 		
 		for(Tuple2<CategorySortKey, String> tuple: top10CategoryList) {
 			String countInfo = tuple._2;
-			long categoryid = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_CATEGORY_ID));  
-			long clickCount = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_CLICK_COUNT));  
-			long orderCount = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_ORDER_COUNT));  
-			long payCount = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_PAY_COUNT));  
-			
+
+			String str_categoryid = ParamUtils.getFieldFromConcatString(
+					countInfo, "\\|", Constants.FIELD_CATEGORY_ID);
+			long categoryid = 0L;
+			if(StringUtils.isNotEmpty(str_categoryid))
+				categoryid= Long.valueOf(str_categoryid);
+
+			String str_clickCount = ParamUtils.getFieldFromConcatString(
+					countInfo, "\\|", Constants.FIELD_CLICK_COUNT);
+			long clickCount = 0L;
+			if(StringUtils.isNotEmpty(str_clickCount))
+				clickCount= Long.valueOf(str_clickCount);
+
+			String str_orderCount = ParamUtils.getFieldFromConcatString(
+					countInfo, "\\|", Constants.FIELD_ORDER_COUNT);
+			long orderCount = 0L;
+			if(StringUtils.isNotEmpty(str_orderCount))
+				orderCount= Long.valueOf(str_orderCount);
+
+			String str_payCount = ParamUtils.getFieldFromConcatString(
+					countInfo, "\\|", Constants.FIELD_PAY_COUNT);
+			long payCount = 0L;
+			if(StringUtils.isNotEmpty(str_payCount))
+				payCount= Long.valueOf(str_payCount);
+
 			Top10Category category = new Top10Category();
 			category.setTaskid(taskid); 
 			category.setCategoryid(categoryid); 
@@ -1783,7 +1776,7 @@ public class UserVisitSessionAnalyzeSpark {
 //					
 //				});
 //		
-//		/**
+//		/*
 //		 * 第二步，执行第一轮局部聚合
 //		 */
 //		JavaPairRDD<String, Long> firstAggrRDD = mappedClickCategoryIdRDD.reduceByKey(
@@ -1799,7 +1792,7 @@ public class UserVisitSessionAnalyzeSpark {
 //					
 //				});
 //		
-//		/**
+//		/*
 //		 * 第三步，去除掉每个key的前缀
 //		 */
 //		JavaPairRDD<Long, Long> restoredRDD = firstAggrRDD.mapToPair(
@@ -1817,7 +1810,7 @@ public class UserVisitSessionAnalyzeSpark {
 //					
 //				});
 //		
-//		/**
+//		/*
 //		 * 第四步，最第二轮全局的聚合
 //		 */
 //		JavaPairRDD<Long, Long> clickCategoryId2CountRDD = restoredRDD.reduceByKey(
