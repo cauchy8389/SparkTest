@@ -84,7 +84,7 @@ import sparkproject.ValidUtils;
 public class UserVisitSessionAnalyzeSpark {
 	
 	public static void main(String[] args) {
-        System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
+        System.setProperty("hadoop.home.dir", "F:\\hadoop-2.6.0-cdh5.8.5");
 
 		// 构建Spark上下文
 		SparkConf conf = new SparkConf()
@@ -487,7 +487,7 @@ public class UserVisitSessionAnalyzeSpark {
 					
 				});
 		
-		/*
+		/**
 		 * 这里就可以说一下，比较适合采用reduce join转换为map join的方式
 		 * 
 		 * userid2PartAggrInfoRDD，可能数据量还是比较大，比如，可能在1千万数据
