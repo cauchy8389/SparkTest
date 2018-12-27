@@ -13,8 +13,8 @@ public class SessionDetail {
 	private long pageid;
 	private String actionTime;
 	private String searchKeyword;
-	private long clickCategoryId;
-	private long clickProductId;
+	private long clickCategoryId = -1;
+	private long clickProductId = -1;
 	private String orderCategoryIds;
 	private String orderProductIds;
 	private String payCategoryIds;

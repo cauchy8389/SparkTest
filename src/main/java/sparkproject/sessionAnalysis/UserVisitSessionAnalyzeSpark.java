@@ -84,7 +84,7 @@ import sparkproject.ValidUtils;
 public class UserVisitSessionAnalyzeSpark {
 	
 	public static void main(String[] args) {
-        System.setProperty("hadoop.home.dir", "F:\\hadoop-2.6.0-cdh5.8.5");
+        System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
 
 		// 构建Spark上下文
 		SparkConf conf = new SparkConf()
@@ -146,6 +146,16 @@ public class UserVisitSessionAnalyzeSpark {
 		 */
 		JavaRDD<Row> actionRDD = SparkUtils.getActionRDDByDateRange(sqlContext, taskParam);
 		JavaPairRDD<String, Row> sessionid2actionRDD = getSessionid2ActionRDD(actionRDD);
+
+        sessionid2actionRDD.foreach(new VoidFunction<Tuple2<String, Row>>() {
+
+            @Override
+            public void call(Tuple2<String, Row> stringRowTuple2) throws Exception {
+
+                System.out.println(stringRowTuple2._2.toString());
+            }
+        });
+		//return;
 		
 		/*
 		 * 持久化，很简单，就是对RDD调用persist()方法，并传入一个持久化级别
@@ -387,7 +397,8 @@ public class UserVisitSessionAnalyzeSpark {
 								userid = row.getLong(1);
 							}
 							String searchKeyword = row.getString(5);
-							long clickCategoryId = row.getLong(6);
+							Object clickCategoryId = row.get(6);
+
 							
 							// 实际上这里要对数据说明一下
 							// 并不是每一行访问行为都有searchKeyword何clickCategoryId两个字段的
@@ -405,7 +416,7 @@ public class UserVisitSessionAnalyzeSpark {
                                     searchKeywordsBuffer.append(",");
 								}
 							}
-							if(clickCategoryId >= 0) {
+							if(clickCategoryId != null) {
 								if(!clickCategoryIdsBuffer.toString().contains(
 										String.valueOf(clickCategoryId))) {   
 									clickCategoryIdsBuffer.append(clickCategoryId);
@@ -1088,9 +1099,10 @@ public class UserVisitSessionAnalyzeSpark {
 			
 			long count = Long.valueOf(String.valueOf(countEntry.getValue()));
 
-            Map<String, Long> hourCountMap = dateHourCountMap.putIfAbsent(date, new HashMap<String, Long>());
-			
-			hourCountMap.put(hour, count);
+            dateHourCountMap.putIfAbsent(date, new HashMap<String, Long>());
+            Map<String, Long> hourCountMap = dateHourCountMap.get(date);
+
+            hourCountMap.put(hour, count);
 		}
 		
 		// 开始实现我们的按时间比例随机抽取算法
@@ -1331,9 +1343,13 @@ public class UserVisitSessionAnalyzeSpark {
 							sessionDetail.setSessionid(row.getString(2));  
 							sessionDetail.setPageid(row.getLong(3));  
 							sessionDetail.setActionTime(row.getString(4));
-							sessionDetail.setSearchKeyword(row.getString(5));  
-							sessionDetail.setClickCategoryId(row.getLong(6));  
-							sessionDetail.setClickProductId(row.getLong(7));   
+							sessionDetail.setSearchKeyword(row.getString(5));
+							if(row.get(6) != null) {
+                                sessionDetail.setClickCategoryId(row.getLong(6));
+                            }
+                            if(row.get(7) != null) {
+                                sessionDetail.setClickProductId(row.getLong(7));
+                            }
 							sessionDetail.setOrderCategoryIds(row.getString(8));  
 							sessionDetail.setOrderProductIds(row.getString(9));  
 							sessionDetail.setPayCategoryIds(row.getString(10)); 

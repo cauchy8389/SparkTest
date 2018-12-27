@@ -47,7 +47,7 @@ public class MockData {
 
             for (int j = 0; j < 10; j++) {
                 String sessionid = UUID.randomUUID().toString().replace("-", "");
-                String baseActionTime = date + " " + random.nextInt(23);
+                String baseActionTime = date + " " + StringUtils.leftPad(String.valueOf(random.nextInt(23)),2, '0');
 
                 for (int k = 0; k < random.nextInt(100); k++) {
                     long pageid = random.nextInt(10);
