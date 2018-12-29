@@ -19,7 +19,7 @@ public class SessionDetailDAOImpl implements ISessionDetailDAO {
 	 * @param sessionDetail 
 	 */
 	public void insert(SessionDetail sessionDetail) {
-		String sql = "insert into session_detail values(?,?,?,?,?,?,?,?,?,?,?,?)";  
+		String sql = "insert into session_detail(task_id,user_id,session_id,page_id,action_time,search_keyword,click_category_id,click_product_id,order_category_ids,order_product_ids,pay_category_ids,pay_product_ids) values(?,?,?,?,?,?,?,?,?,?,?,?)";
 		
 		Object[] params = new Object[]{sessionDetail.getTaskid(),
 				sessionDetail.getUserid(),
@@ -43,7 +43,7 @@ public class SessionDetailDAOImpl implements ISessionDetailDAO {
 	 * @param sessionDetails
 	 */
 	public void insertBatch(List<SessionDetail> sessionDetails) {
-		String sql = "insert into session_detail values(?,?,?,?,?,?,?,?,?,?,?,?)";  
+		String sql = "insert into session_detail(task_id,user_id,session_id,page_id,action_time,search_keyword,click_category_id,click_product_id,order_category_ids,order_product_ids,pay_category_ids,pay_product_ids) values(?,?,?,?,?,?,?,?,?,?,?,?)";
 		
 		List<Object[]> paramsList = new ArrayList<Object[]>();
 		for(SessionDetail sessionDetail : sessionDetails) {

@@ -68,6 +68,7 @@ public class JDBCHelper {
 		comboPooledDataSource.setMinPoolSize(minPoolSize);
 		comboPooledDataSource.setMaxIdleTime(maxIdleTime);
 		comboPooledDataSource.setInitialPoolSize(initialPoolSize);
+		//comboPooledDataSource.
 	}
 	
 	/**

@@ -147,14 +147,14 @@ public class UserVisitSessionAnalyzeSpark {
 		JavaRDD<Row> actionRDD = SparkUtils.getActionRDDByDateRange(sqlContext, taskParam);
 		JavaPairRDD<String, Row> sessionid2actionRDD = getSessionid2ActionRDD(actionRDD);
 
-        sessionid2actionRDD.foreach(new VoidFunction<Tuple2<String, Row>>() {
-
-            @Override
-            public void call(Tuple2<String, Row> stringRowTuple2) throws Exception {
-
-                System.out.println(stringRowTuple2._2.toString());
-            }
-        });
+//        sessionid2actionRDD.foreach(new VoidFunction<Tuple2<String, Row>>() {
+//
+//            @Override
+//            public void call(Tuple2<String, Row> stringRowTuple2) throws Exception {
+//
+//                System.out.println(stringRowTuple2._2.toString());
+//            }
+//        });
 		//return;
 		
 		/*
@@ -1029,7 +1029,7 @@ public class UserVisitSessionAnalyzeSpark {
 	
 	/**
 	 * 随机抽取session
-	 * @param sessionid2AggrInfoRDD  
+	 * @param sessionid2AggrInfoRDD  JavaPairRDD<String_String>
 	 */
 	private static void randomExtractSession(
 			JavaSparkContext sc,
@@ -1192,8 +1192,8 @@ public class UserVisitSessionAnalyzeSpark {
 
                 //fastutilExtractList.add(3)
 
-				for(int i = 0; i < extractList.size(); i++) {
-					fastutilExtractList.add(extractList.get(i).intValue());
+				for(int iExt : extractList) {
+					fastutilExtractList.add(iExt);
 				}
 				
 				fastutilHourExtractMap.put(hour, fastutilExtractList);
@@ -1529,9 +1529,10 @@ public class UserVisitSessionAnalyzeSpark {
 						
 						List<Tuple2<Long, Long>> list = new ArrayList<Tuple2<Long, Long>>();
 						
-						long clickCategoryId = row.getLong(6);
-						if(clickCategoryId >= 0) {
-							list.add(new Tuple2<Long, Long>(clickCategoryId, clickCategoryId));   
+						Object clickCategoryId = row.get(6);
+						if(clickCategoryId != null) {
+							long clickcatId = row.getLong(6);
+							list.add(new Tuple2<Long, Long>(clickcatId, clickcatId));
 						}
 						
 						String orderCategoryIds = row.getString(8);
@@ -1656,18 +1657,34 @@ public class UserVisitSessionAnalyzeSpark {
 		
 		for(Tuple2<CategorySortKey, String> tuple: top10CategoryList) {
 			String countInfo = tuple._2;
-			long categoryid = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_CATEGORY_ID));  
-			long clickCount = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_CLICK_COUNT));  
-			long orderCount = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_ORDER_COUNT));  
-			long payCount = Long.valueOf(ParamUtils.getFieldFromConcatString(
-					countInfo, "\\|", Constants.FIELD_PAY_COUNT));  
-			
+
+            String str_categoryid = ParamUtils.getFieldFromConcatString(
+                    countInfo, "\\|", Constants.FIELD_CATEGORY_ID);
+            long categoryid = 0L;
+            if(StringUtils.isNotEmpty(str_categoryid))
+                categoryid= Long.valueOf(str_categoryid);
+
+            String str_clickCount = ParamUtils.getFieldFromConcatString(
+                    countInfo, "\\|", Constants.FIELD_CLICK_COUNT);
+            long clickCount = 0L;
+            if(StringUtils.isNotEmpty(str_clickCount))
+                clickCount= Long.valueOf(str_clickCount);
+
+            String str_orderCount = ParamUtils.getFieldFromConcatString(
+                    countInfo, "\\|", Constants.FIELD_ORDER_COUNT);
+            long orderCount = 0L;
+            if(StringUtils.isNotEmpty(str_orderCount))
+                orderCount= Long.valueOf(str_orderCount);
+
+            String str_payCount = ParamUtils.getFieldFromConcatString(
+                    countInfo, "\\|", Constants.FIELD_PAY_COUNT);
+            long payCount = 0L;
+            if(StringUtils.isNotEmpty(str_payCount))
+                payCount= Long.valueOf(str_payCount);
+
 			Top10Category category = new Top10Category();
-			category.setTaskid(taskid); 
-			category.setCategoryid(categoryid); 
+			category.setTaskid(taskid);
+			category.setCategoryid(categoryid);
 			category.setClickCount(clickCount);  
 			category.setOrderCount(orderCount);
 			category.setPayCount(payCount);
@@ -2273,9 +2290,13 @@ public class UserVisitSessionAnalyzeSpark {
 				sessionDetail.setSessionid(row.getString(2));  
 				sessionDetail.setPageid(row.getLong(3));  
 				sessionDetail.setActionTime(row.getString(4));
-				sessionDetail.setSearchKeyword(row.getString(5));  
-				sessionDetail.setClickCategoryId(row.getLong(6));  
-				sessionDetail.setClickProductId(row.getLong(7));   
+				sessionDetail.setSearchKeyword(row.getString(5));
+				if (row.get(6) != null) {
+                    sessionDetail.setClickCategoryId(row.getLong(6));
+                }
+                if (row.get(7) != null) {
+                    sessionDetail.setClickProductId(row.getLong(7));
+                }
 				sessionDetail.setOrderCategoryIds(row.getString(8));  
 				sessionDetail.setOrderProductIds(row.getString(9));  
 				sessionDetail.setPayCategoryIds(row.getString(10)); 

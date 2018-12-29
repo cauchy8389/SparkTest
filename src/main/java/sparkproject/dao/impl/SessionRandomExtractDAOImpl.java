@@ -13,7 +13,7 @@ public class SessionRandomExtractDAOImpl implements ISessionRandomExtractDAO {
 
 	/**
 	 * 插入session随机抽取
-	 * @param sessionAggrStat 
+	 * @param sessionRandomExtract  SessionRandomExtract
 	 */
 	public void insert(SessionRandomExtract sessionRandomExtract) {
 		String sql = "insert into session_random_extract values(?,?,?,?,?)";
