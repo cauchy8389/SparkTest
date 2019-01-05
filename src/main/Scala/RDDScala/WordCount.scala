@@ -15,7 +15,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object WordCount {
   def main(args: Array[String]): Unit = {
-    System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5")
+    System.setProperty("hadoop.home.dir", "F:\\hadoop-2.6.0-cdh5.8.5")
     //配置
     val conf  = new SparkConf()
     //需要指明  运行的资源管理器
@@ -36,14 +36,20 @@ object WordCount {
     //val sourceRDD  =
     //    sc.parallelize(List("aa bb cc dd", "aa aa cc cc", "dd dd cc cc"))
     val sourceRDD =
-      sc.textFile("E:\\text.txt") //从外部获取数据
+      sc.textFile("F:\\spark.txt") //从外部获取数据
+
+    val words = sourceRDD.map(line => line.split("\\s+"))
+    words.foreach(wordline => {
+      wordline.foreach(wowo => print(wowo + " "))
+      println();
+    });
 
     //sourceRDD就是一个数据集 RDD中提供非常丰富算子操作，
     // 算子操作其实就是RDD的方法
 
     //把元素 进行扩展
     //"aa bb cc dd" -> "aa"  "bb"  "cc"  "dd"
-    val flatMapRDD = sourceRDD.flatMap(line => line.split(" "))
+    val flatMapRDD = sourceRDD.flatMap(line => line.split("\\s+"))
 
     //aa ->(aa, 1)
     val mapRDD = flatMapRDD.map(word=>(word, 1))
