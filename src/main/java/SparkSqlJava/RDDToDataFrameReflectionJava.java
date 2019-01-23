@@ -4,7 +4,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 
@@ -55,7 +55,7 @@ public class RDDToDataFrameReflectionJava {
         def createDataFrame(rdd : org.apache.spark.api.java.JavaRDD[_],
         beanClass : scala.Predef.Class[_]) : org.apache.spark.sql.DataFrame
          */
-        DataFrame dataFrame = sqlContext.createDataFrame(map, Student.class);
+        Dataset<Row> dataFrame = sqlContext.createDataFrame(map, Student.class);
 
         //得到一个df之后，使用sql   首先把这个df注册成一张临时表
         dataFrame.registerTempTable("Tab_student");
@@ -63,7 +63,7 @@ public class RDDToDataFrameReflectionJava {
         String sql = "select * from Tab_student where age <= 18";
 
         //注意 查询的结果 返回 仍然是一个dataFrame
-        DataFrame sql1 = sqlContext.sql(sql);
+        Dataset<Row> sql1 = sqlContext.sql(sql);
 
         //show  只显示10行
         //sql1.show();

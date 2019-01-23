@@ -7,8 +7,7 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * 针对RDD 使用java接口
@@ -69,8 +68,8 @@ FlatMapFunction<T, R> Iterable<R> call(T) 接收一个输入
                 //
                 new FlatMapFunction<Integer, Integer>() {
                     @Override
-                    public Iterable<Integer> call(Integer integer) throws Exception {
-                        return Arrays.asList(1, 2, 3);
+                    public Iterator<Integer> call(Integer integer) throws Exception {
+                        return Arrays.asList(1, 2, 3).iterator();
                     }
                 }
         );

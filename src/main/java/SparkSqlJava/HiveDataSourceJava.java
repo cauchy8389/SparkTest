@@ -2,8 +2,9 @@ package SparkSqlJava;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.hive.HiveContext;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
 
 /**
  * Created by Administrator on 2018/9/9.
@@ -23,18 +24,18 @@ public class HiveDataSourceJava {
         //spark 2.0  无论是哪种输入源 都是  SQLContext
         //把hive中的配置  hive-site.xml文件拷贝到 工程中
         //因为 spark 连接到哪个 hive  需要指明
-        HiveContext hiveContext = new HiveContext(javaSparkContext);
+        SQLContext hiveContext = new SQLContext(javaSparkContext);
 
         //使用HiveContext  可以直接使用HSQL语句
         //通过查询hive表，把查询的结果  保存到了 DataFrame中
         //hive  hsql 语句
-        DataFrame sql = hiveContext.sql("select * from hadoop.human");
+        Dataset<Row> sql = hiveContext.sql("select * from hadoop.human");
 
 
         sql.registerTempTable("student");
         //把表名 注册成了 student   如果查询这个注册的表名
         //那么 这条语句是spark sql(dataFrame)中 sql语句
-        DataFrame sql1 = hiveContext.sql("select * from student where age >= 19");
+        Dataset<Row> sql1 = hiveContext.sql("select * from student where age >= 19");
 
         sql1.show();
 

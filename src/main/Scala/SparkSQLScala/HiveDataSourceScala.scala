@@ -1,6 +1,6 @@
 package SparkSQLScala
 
-import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -14,7 +14,7 @@ object HiveDataSourceScala {
     conf.setMaster("local")
     conf.setAppName("create df")
     val sc = new SparkContext(conf)
-    val hiveContext = new HiveContext(sc)
+    val hiveContext = new SQLContext(sc)
     //这个sql语句 执行的hive的hsql
     val  df =  hiveContext.sql("select * from hadoop.human")
     //df.show()

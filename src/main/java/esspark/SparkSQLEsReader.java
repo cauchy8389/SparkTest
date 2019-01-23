@@ -2,7 +2,7 @@ package esspark;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 
@@ -23,13 +23,13 @@ public class SparkSQLEsReader {
         options.put("pushdown","true");
         options.put("es.nodes","localhost");
 
-        DataFrame df = sqlContext.read()
+        Dataset<Row> df = sqlContext.read()
                 .options(options)
                 .format("org.elasticsearch.spark.sql").load("esh_sparksql/crimes_reflection");
 
         df.registerTempTable("crimes");
 
-        DataFrame theftCrimes = sqlContext.sql("SELECT * FROM crimes WHERE primaryType='THEFT'");
+        Dataset<Row> theftCrimes = sqlContext.sql("SELECT * FROM crimes WHERE primaryType='THEFT'");
         for(Row row: theftCrimes.javaRDD().collect()){
             System.out.println(row);
         }

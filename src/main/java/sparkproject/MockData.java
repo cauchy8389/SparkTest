@@ -6,15 +6,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-
+import scala.collection.Seq;
 
 
 /**
@@ -27,10 +25,10 @@ public class MockData {
     /**
      * 弄你数据
      *
-     * @param sc
+     * @param jsc
      * @param sqlContext
      */
-    public static void mock(JavaSparkContext sc,
+    public static void mock(JavaSparkContext jsc,
                             SQLContext sqlContext) {
         List<Row> rows = new ArrayList<Row>();
 
@@ -85,7 +83,8 @@ public class MockData {
             }
         }
 
-        JavaRDD<Row> rowsRDD = sc.parallelize(rows);
+        //sc.sparkContext().parallelize(rows);
+        JavaRDD<Row> rowsRDD = jsc.parallelize(rows);
 
         StructType schema = DataTypes.createStructType(Arrays.asList(
                 DataTypes.createStructField("date", DataTypes.StringType, true),
@@ -101,10 +100,12 @@ public class MockData {
                 DataTypes.createStructField("pay_category_ids", DataTypes.StringType, true),
                 DataTypes.createStructField("pay_product_ids", DataTypes.StringType, true)));
 
-        DataFrame df = sqlContext.createDataFrame(rowsRDD, schema);
+        Dataset<Row> df = sqlContext.createDataFrame(rowsRDD, schema);
 
-        df.registerTempTable("user_visit_action");
-        for (Row _row : df.take(10)) {
+        //df.registerTempTable("user_visit_action");
+        df.createOrReplaceTempView("user_visit_action");
+
+        for (Row _row : df.takeAsList(10)) {
             System.out.println(_row);
         }
 
@@ -128,7 +129,7 @@ public class MockData {
             rows.add(row);
         }
 
-        rowsRDD = sc.parallelize(rows);
+        rowsRDD = jsc.parallelize(rows);
 
         StructType schema2 = DataTypes.createStructType(Arrays.asList(
                 DataTypes.createStructField("user_id", DataTypes.LongType, true),
@@ -139,12 +140,13 @@ public class MockData {
                 DataTypes.createStructField("city", DataTypes.StringType, true),
                 DataTypes.createStructField("sex", DataTypes.StringType, true)));
 
-        DataFrame df2 = sqlContext.createDataFrame(rowsRDD, schema2);
-        for (Row _row : df2.take(2)) {
+        Dataset<Row> df2 = sqlContext.createDataFrame(rowsRDD, schema2);
+        for (Row _row : df2.takeAsList(2)) {
             System.out.println(_row);
         }
 
-        df2.registerTempTable("user_info");
+
+        df2.createOrReplaceTempView("user_info");
     }
 
     public static void main(String[] args) {
@@ -192,6 +194,11 @@ public class MockData {
 
         //zhy comment
 
+        String aa = "ad1dd";
+        String bb = aa + "";
+        System.out.println(aa == bb);
+        System.out.println(aa.equals(bb));
+        System.out.println(StringUtils.equals(aa,bb));
     }
 
 }

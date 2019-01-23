@@ -1,26 +1,25 @@
 package SparkStreamingJava;
 
-import com.google.common.base.Optional;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.streaming.Durations;
+import org.apache.spark.api.java.Optional;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import scala.Tuple2;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Administrator on 2018/9/16.
  */
 //做一次 全局的单词统计
 public class UpdateStateByKeyWordCount {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
         SparkConf conf  = new SparkConf();
         conf.setMaster("local[2]");
@@ -47,8 +46,8 @@ public class UpdateStateByKeyWordCount {
         JavaDStream<String> stringJavaDStream = stringJavaReceiverInputDStream.flatMap(
                 new FlatMapFunction<String, String>() {
                     @Override
-                    public Iterable<String> call(String s) throws Exception {
-                        return Arrays.asList(s.split(" "));
+                    public Iterator<String> call(String s) throws Exception {
+                        return Arrays.asList(s.split(" ")).iterator();
                     }
                 }
         );
@@ -102,7 +101,11 @@ public class UpdateStateByKeyWordCount {
         stringIntegerJavaPairDStream1.print();
 
         javaStreamingContext.start();
-        javaStreamingContext.awaitTermination();
+        try {
+            javaStreamingContext.awaitTermination();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         //注意事项: 使用updateStateByKey  算子要注意  数据量，sparkStreaming流式计算
         //会一直运算，防止updateStateByKey导致 ，集合过于庞大。

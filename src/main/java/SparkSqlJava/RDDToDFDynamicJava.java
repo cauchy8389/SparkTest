@@ -4,7 +4,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SQLContext;
@@ -71,11 +71,11 @@ public class RDDToDFDynamicJava {
 
         //用于描述 每一列中名称，和类型，以及是否为空
         StructType st = DataTypes.createStructType(structFields);
-        DataFrame dataFrame = sqlContext.createDataFrame(map, st);
+        Dataset<Row> dataFrame = sqlContext.createDataFrame(map, st);
 
         dataFrame.registerTempTable("student");
         String sql = "select * from student where age > 19";
-        DataFrame sql1 = sqlContext.sql(sql);
+        Dataset<Row> sql1 = sqlContext.sql(sql);
 
 
         List<Row> collect = sql1.javaRDD().collect();

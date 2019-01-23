@@ -2,7 +2,8 @@ package SparkSqlJava;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 
 import java.util.HashMap;
@@ -27,14 +28,14 @@ public class JDBCDataSource {
         options.put("dbtable", "human2");
         options.put("user", "hive");
         options.put("password", "hive");
-        DataFrame jdbc =
+        Dataset<Row> jdbc =
                 sqlContext.read().format("jdbc").options(options).load();
 
         jdbc.registerTempTable("student");
 
         //一般企业中 这种从jdbc 中读取到dataframe  用法比较少用
         //需要用到例如 MySQL数据，直接在mysql去查询
-        DataFrame sql = sqlContext.sql("select * from student where age >= 20");
+        Dataset<Row> sql = sqlContext.sql("select * from student where age >= 20");
 
         sql.show();
 

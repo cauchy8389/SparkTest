@@ -1,57 +1,31 @@
 package sparkproject.sessionAnalysis;
 
-import it.unimi.dsi.fastutil.ints.IntList;
+import com.alibaba.fastjson.JSONObject;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.*;
+import org.apache.spark.api.java.Optional;
+import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.storage.StorageLevel;
+import org.apache.spark.util.AccumulatorV2;
+import scala.Tuple2;
+import sparkproject.*;
+import sparkproject.dao.*;
+import sparkproject.dao.factory.DAOFactory;
+import sparkproject.domain.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.spark.Accumulator;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.hive.HiveContext;
-import org.apache.spark.storage.StorageLevel;
-
-import scala.Tuple2;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Optional;
-import sparkproject.ConfigurationManager;
-import sparkproject.Constants;
-import sparkproject.dao.ISessionAggrStatDAO;
-import sparkproject.dao.ISessionDetailDAO;
-import sparkproject.dao.ISessionRandomExtractDAO;
-import sparkproject.dao.ITaskDAO;
-import sparkproject.dao.ITop10CategoryDAO;
-import sparkproject.dao.ITop10SessionDAO;
-import sparkproject.dao.factory.DAOFactory;
-import sparkproject.domain.SessionAggrStat;
-import sparkproject.domain.SessionDetail;
-import sparkproject.domain.SessionRandomExtract;
-import sparkproject.domain.Task;
-import sparkproject.domain.Top10Category;
-import sparkproject.domain.Top10Session;
-import sparkproject.ParamUtils;
-import sparkproject.SparkUtils;
-import sparkproject.ValidUtils;
+import java.util.*;
 
 /**
  * 用户访问session分析Spark作业
@@ -87,34 +61,20 @@ public class UserVisitSessionAnalyzeSpark {
         System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
 
 		// 构建Spark上下文
-		SparkConf conf = new SparkConf()
-				.setAppName(Constants.SPARK_APP_NAME_SESSION)
-//				.set("spark.default.parallelism", "100")
-				.set("spark.storage.memoryFraction", "0.5")  
-				.set("spark.shuffle.consolidateFiles", "true")
-				.set("spark.shuffle.file.buffer", "64")  
-				.set("spark.shuffle.memoryFraction", "0.3")    
-				.set("spark.reducer.maxSizeInFlight", "24")  
-				.set("spark.shuffle.io.maxRetries", "60")  
-				.set("spark.shuffle.io.retryWait", "60")   
-				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-				.registerKryoClasses(new Class[]{
-						CategorySortKey.class,
-						IntList.class});   
+		SparkConf conf = SparkUtils.getSparkConf();
 		SparkUtils.setMaster(conf); 
 		
-		/*
-		 * 比如，获取top10热门品类功能中，二次排序，自定义了一个Key
-		 * 那个key是需要在进行shuffle的时候，进行网络传输的，因此也是要求实现序列化的
-		 * 启用Kryo机制以后，就会用Kryo去序列化和反序列化CategorySortKey
-		 * 所以这里要求，为了获取最佳性能，注册一下我们自定义的类
-		 */
-		JavaSparkContext sc = new JavaSparkContext(conf);
+
+		SparkSession ss = SparkSession.builder().config(conf).getOrCreate();
+
+		//ss.pa
+		//ss.sparkContext().
+		JavaSparkContext jsc = new JavaSparkContext(ss.sparkContext());
 //		sc.checkpointFile("hdfs://");
-		SQLContext sqlContext = getSQLContext(sc.sc());
+		SQLContext sqlContext = SparkUtils.getSQLContext(ss);
 		
 		// 生成模拟测试数据
-		SparkUtils.mockData(sc, sqlContext);  
+		SparkUtils.mockData(jsc, sqlContext);
 		
 		// 创建需要使用的DAO组件
 		ITaskDAO taskDAO = DAOFactory.getTaskDAO();
@@ -180,15 +140,17 @@ public class UserVisitSessionAnalyzeSpark {
 		// 然后就可以获取到session粒度的数据，同时呢，数据里面还包含了session对应的user的信息
 		// 到这里为止，获取的数据是<sessionid,(sessionid,searchKeywords,clickCategoryIds,age,professional,city,sex)>  
 		JavaPairRDD<String, String> sessionid2AggrInfoRDD = 
-				aggregateBySession(sc, sqlContext, sessionid2actionRDD);
+				aggregateBySession(jsc, sqlContext, sessionid2actionRDD);
 		
 		// 接着，就要针对session粒度的聚合数据，按照使用者指定的筛选参数进行数据过滤
 		// 相当于我们自己编写的算子，是要访问外面的任务参数对象的
 		// 所以，大家记得我们之前说的，匿名内部类（算子函数），访问外部对象，是要给外部对象使用final修饰的
 		
 		// 重构，同时进行过滤和统计
-		Accumulator<String> sessionAggrStatAccumulator = sc.accumulator(
-				"", new SessionAggrStatAccumulator());
+		//Accumulator<String> sessionAggrStatAccumulator = jsc.accumulator("", new SessionAggrStatAccumulator());
+
+		final SessionAggrStatAccumulator sessionAggrStatAccumulator = new SessionAggrStatAccumulator();
+		jsc.sc().register(sessionAggrStatAccumulator, "sessionAggrStatAccumulator");
 		
 		JavaPairRDD<String, String> filteredSessionid2AggrInfoRDD = filterSessionAndAggrStat(
 				sessionid2AggrInfoRDD, taskParam, sessionAggrStatAccumulator);
@@ -219,7 +181,7 @@ public class UserVisitSessionAnalyzeSpark {
 		 * 计算出来的结果，在J2EE中，是怎么显示的，是用两张柱状图显示
 		 */
 		
-		randomExtractSession(sc, task.getTaskid(), 
+		randomExtractSession(jsc, task.getTaskid(),
 				filteredSessionid2AggrInfoRDD, sessionid2detailRDD);
 		
 		/*
@@ -291,27 +253,12 @@ public class UserVisitSessionAnalyzeSpark {
 				getTop10Category(task.getTaskid(), sessionid2detailRDD);
 		
 		// 获取top10活跃session
-		getTop10Session(sc, task.getTaskid(), 
+		getTop10Session(jsc, task.getTaskid(),
 				top10CategoryList, sessionid2detailRDD);
 		
 		// 关闭Spark上下文
-		sc.close(); 
-	}
-
-	/**
-	 * 获取SQLContext
-	 * 如果是在本地测试环境的话，那么就生成SQLContext对象
-	 * 如果是在生产环境运行的话，那么就生成HiveContext对象
-	 * @param sc SparkContext
-	 * @return SQLContext
-	 */
-	private static SQLContext getSQLContext(SparkContext sc) {
-		boolean local = ConfigurationManager.getBoolean(Constants.SPARK_LOCAL);
-		if(local) {
-			return new SQLContext(sc);
-		} else {
-			return new HiveContext(sc);
-		}
+		jsc.close();
+		ss.close();
 	}
 	
 	/**
@@ -336,7 +283,7 @@ public class UserVisitSessionAnalyzeSpark {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public Iterable<Tuple2<String, Row>> call(Iterator<Row> iterator)
+			public Iterator<Tuple2<String, Row>> call(Iterator<Row> iterator)
 					throws Exception {
 				List<Tuple2<String, Row>> list = new ArrayList<Tuple2<String, Row>>();
 				
@@ -345,7 +292,7 @@ public class UserVisitSessionAnalyzeSpark {
 					list.add(new Tuple2<String, Row>(row.getString(2), row));  
 				}
 				
-				return list;
+				return list.iterator();
 			}
 			
 		});
@@ -847,7 +794,7 @@ public class UserVisitSessionAnalyzeSpark {
 	private static JavaPairRDD<String, String> filterSessionAndAggrStat(
 			JavaPairRDD<String, String> sessionid2AggrInfoRDD, 
 			final JSONObject taskParam,
-			final Accumulator<String> sessionAggrStatAccumulator) {  
+			final AccumulatorV2<String,String> sessionAggrStatAccumulator) {
 		// 为了使用我们后面的ValieUtils，所以，首先将所有的筛选参数拼接成一个连接串
 		// 此外，这里其实大家不要觉得是多此一举
 		// 其实我们是给后面的性能优化埋下了一个伏笔
@@ -866,7 +813,8 @@ public class UserVisitSessionAnalyzeSpark {
 				+ (sex != null ? Constants.PARAM_SEX + "=" + sex + "|" : "")
 				+ (keywords != null ? Constants.PARAM_KEYWORDS + "=" + keywords + "|" : "")
 				+ (categoryIds != null ? Constants.PARAM_CATEGORY_IDS + "=" + categoryIds: "");
-		
+
+		//StringUtils.stripEnd()
 		if(_parameter.endsWith("\\|")) {
 			_parameter = _parameter.substring(0, _parameter.length() - 1);
 		}
@@ -998,6 +946,8 @@ public class UserVisitSessionAnalyzeSpark {
 					}
 					
 				});
+
+		//Map<String,Long> mapFiltered = filteredSessionid2AggrInfoRDD.countByKey();
 		
 		return filteredSessionid2AggrInfoRDD;
 	}
@@ -1082,7 +1032,7 @@ public class UserVisitSessionAnalyzeSpark {
 		 * 
 		 */
 		
-		Map<String, Object> countMap = time2sessionidRDD.countByKey();
+		Map<String, Long> countMap = time2sessionidRDD.countByKey();
 		
 		/*
 		 * 第二步，使用按时间比例随机抽取算法，计算出每天每小时要抽取session的索引
@@ -1092,12 +1042,12 @@ public class UserVisitSessionAnalyzeSpark {
 		Map<String, Map<String, Long>> dateHourCountMap = 
 				new HashMap<String, Map<String, Long>>();
 		
-		for(Map.Entry<String, Object> countEntry : countMap.entrySet()) {
+		for(Map.Entry<String, Long> countEntry : countMap.entrySet()) {
 			String dateHour = countEntry.getKey();
 			String date = dateHour.split("_")[0];
 			String hour = dateHour.split("_")[1];  
 			
-			long count = Long.valueOf(String.valueOf(countEntry.getValue()));
+			long count = countEntry.getValue();
 
             dateHourCountMap.putIfAbsent(date, new HashMap<String, Long>());
             Map<String, Long> hourCountMap = dateHourCountMap.get(date);
@@ -1231,7 +1181,7 @@ public class UserVisitSessionAnalyzeSpark {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterable<Tuple2<String, String>> call(
+					public Iterator<Tuple2<String, String>> call(
 							Tuple2<String, Iterable<String>> tuple)
 							throws Exception {
 						List<Tuple2<String, String>> extractSessionids = 
@@ -1282,7 +1232,7 @@ public class UserVisitSessionAnalyzeSpark {
 							index++;
 						}
 						
-						return extractSessionids;
+						return extractSessionids.iterator();
 					}
 					
 				});
@@ -1430,19 +1380,42 @@ public class UserVisitSessionAnalyzeSpark {
         long visit_length_30m = 0L;
         if(StringUtils.isNotEmpty(str_visit_length_30m))
             visit_length_30m= Long.valueOf(str_visit_length_30m);
-		
-		long step_length_1_3 = Long.valueOf(ParamUtils.getFieldFromConcatString(
-				value, "\\|", Constants.STEP_PERIOD_1_3));
-		long step_length_4_6 = Long.valueOf(ParamUtils.getFieldFromConcatString(
-				value, "\\|", Constants.STEP_PERIOD_4_6));
-		long step_length_7_9 = Long.valueOf(ParamUtils.getFieldFromConcatString(
-				value, "\\|", Constants.STEP_PERIOD_7_9));
-		long step_length_10_30 = Long.valueOf(ParamUtils.getFieldFromConcatString(
-				value, "\\|", Constants.STEP_PERIOD_10_30));
-		long step_length_30_60 = Long.valueOf(ParamUtils.getFieldFromConcatString(
-				value, "\\|", Constants.STEP_PERIOD_30_60));
-		long step_length_60 = Long.valueOf(ParamUtils.getFieldFromConcatString(
-				value, "\\|", Constants.STEP_PERIOD_60));
+
+		String str_step_length_1_3 = ParamUtils.getFieldFromConcatString(
+				value, "\\|", Constants.STEP_PERIOD_1_3);
+		long step_length_1_3 = 0L;
+		if(StringUtils.isNotEmpty(str_step_length_1_3))
+			step_length_1_3= Long.valueOf(str_step_length_1_3);
+
+		String str_step_length_4_6 = ParamUtils.getFieldFromConcatString(
+				value, "\\|", Constants.STEP_PERIOD_4_6);
+		long step_length_4_6 = 0L;
+		if(StringUtils.isNotEmpty(str_step_length_4_6))
+			step_length_4_6= Long.valueOf(str_step_length_4_6);
+
+		String str_step_length_7_9 = ParamUtils.getFieldFromConcatString(
+				value, "\\|", Constants.STEP_PERIOD_7_9);
+		long step_length_7_9 = 0L;
+		if(StringUtils.isNotEmpty(str_step_length_7_9))
+			step_length_7_9= Long.valueOf(str_step_length_7_9);
+
+		String str_step_length_10_30 = ParamUtils.getFieldFromConcatString(
+				value, "\\|", Constants.STEP_PERIOD_10_30);
+		long step_length_10_30 = 0L;
+		if(StringUtils.isNotEmpty(str_step_length_10_30))
+			step_length_10_30= Long.valueOf(str_step_length_10_30);
+
+		String str_step_length_30_60 = ParamUtils.getFieldFromConcatString(
+				value, "\\|", Constants.STEP_PERIOD_30_60);
+		long step_length_30_60 = 0L;
+		if(StringUtils.isNotEmpty(str_step_length_30_60))
+			step_length_30_60= Long.valueOf(str_step_length_30_60);
+
+		String str_step_length_60 = ParamUtils.getFieldFromConcatString(
+				value, "\\|", Constants.STEP_PERIOD_60);
+		long step_length_60 = 0L;
+		if(StringUtils.isNotEmpty(str_step_length_60))
+			step_length_60= Long.valueOf(str_step_length_60);
 		
 		// 计算各个访问时长和访问步长的范围
 		double visit_length_1s_3s_ratio = ParamUtils.formatDouble(
@@ -1523,7 +1496,7 @@ public class UserVisitSessionAnalyzeSpark {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterable<Tuple2<Long, Long>> call(
+					public Iterator<Tuple2<Long, Long>> call(
 							Tuple2<String, Row> tuple) throws Exception {
 						Row row = tuple._2;
 						
@@ -1553,7 +1526,7 @@ public class UserVisitSessionAnalyzeSpark {
 							}
 						}
 						
-						return list;
+						return list.iterator();
 					}
 					
 				});
@@ -1899,7 +1872,7 @@ public class UserVisitSessionAnalyzeSpark {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterable<Tuple2<Long, Long>> call(
+					public Iterator<Tuple2<Long, Long>> call(
 							Tuple2<String, Row> tuple) throws Exception {
 						Row row = tuple._2;
 						String orderCategoryIds = row.getString(8);
@@ -1911,7 +1884,7 @@ public class UserVisitSessionAnalyzeSpark {
 							list.add(new Tuple2<Long, Long>(Long.valueOf(orderCategoryId), 1L));  
 						}
 						
-						return list;
+						return list.iterator();
 					}
 					
 				});
@@ -1960,7 +1933,7 @@ public class UserVisitSessionAnalyzeSpark {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterable<Tuple2<Long, Long>> call(
+					public Iterator<Tuple2<Long, Long>> call(
 							Tuple2<String, Row> tuple) throws Exception {
 						Row row = tuple._2;
 						String payCategoryIds = row.getString(10);
@@ -1972,7 +1945,7 @@ public class UserVisitSessionAnalyzeSpark {
 							list.add(new Tuple2<Long, Long>(Long.valueOf(payCategoryId), 1L));  
 						}
 						
-						return list;
+						return list.iterator();
 					}
 					
 				});
@@ -2136,7 +2109,7 @@ public class UserVisitSessionAnalyzeSpark {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterable<Tuple2<Long, String>> call(
+					public Iterator<Tuple2<Long, String>> call(
 							Tuple2<String, Iterable<Row>> tuple) throws Exception {
 						String sessionid = tuple._1;
 						Iterator<Row> iterator = tuple._2.iterator();
@@ -2171,7 +2144,7 @@ public class UserVisitSessionAnalyzeSpark {
 							list.add(new Tuple2<Long, String>(categoryid, value));  
 						}
 						
-						return list;
+						return list.iterator();
 					}
 					
 				}) ;
@@ -2205,7 +2178,7 @@ public class UserVisitSessionAnalyzeSpark {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterable<Tuple2<String, String>> call(
+					public Iterator<Tuple2<String, String>> call(
 							Tuple2<Long, Iterable<String>> tuple)
 							throws Exception {
 						long categoryid = tuple._1;
@@ -2266,7 +2239,7 @@ public class UserVisitSessionAnalyzeSpark {
 							}
 						}
 						
-						return list;
+						return list.iterator();
 					}
 					
 				});

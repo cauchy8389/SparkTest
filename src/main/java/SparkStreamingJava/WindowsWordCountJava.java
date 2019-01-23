@@ -11,14 +11,14 @@ import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import scala.Tuple2;
 
-import java.util.Arrays;
+import java.util.*;
 
 
 /**
  * Created by Administrator on 2018/9/16.
  */
 public class WindowsWordCountJava {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
         SparkConf conf  = new SparkConf();
         conf.setMaster("local[2]");
@@ -33,8 +33,8 @@ public class WindowsWordCountJava {
         JavaDStream<String> stringJavaDStream = stringJavaReceiverInputDStream.flatMap(
                 new FlatMapFunction<String, String>() {
                     @Override
-                    public Iterable<String> call(String s) throws Exception {
-                        return Arrays.asList(s.split(" "));
+                    public Iterator<String> call(String s) throws Exception {
+                        return Arrays.asList(s.split(" ")).iterator();
                     }
                 }
         );

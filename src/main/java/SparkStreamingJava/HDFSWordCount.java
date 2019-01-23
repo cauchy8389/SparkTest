@@ -11,7 +11,7 @@ import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import scala.Tuple2;
 
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Created by Administrator on 2018/9/16.
@@ -34,8 +34,8 @@ public class HDFSWordCount {
         JavaDStream<String> stringJavaDStream1 = stringJavaDStream.flatMap(
                 new FlatMapFunction<String, String>() {
                     @Override
-                    public Iterable<String> call(String s) throws Exception {
-                        return Arrays.asList(s.split(","));
+                    public Iterator<String> call(String s) throws Exception {
+                        return Arrays.asList(s.split(",")).iterator();
                     }
                 }
         );
@@ -71,6 +71,10 @@ public class HDFSWordCount {
 
 
         javaStreamingContext.start();
-        javaStreamingContext.awaitTermination();
+        try {
+            javaStreamingContext.awaitTermination();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

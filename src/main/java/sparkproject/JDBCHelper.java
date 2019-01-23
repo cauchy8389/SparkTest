@@ -117,6 +117,14 @@ public class JDBCHelper {
 		} catch (Exception e) {
 			e.printStackTrace();  
 		} finally {
+			try {
+				if (pstmt != null && !pstmt.isClosed()){
+                    pstmt.close();
+                }
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
 			if(conn != null) {
 				try {
 					conn.close();
@@ -157,6 +165,14 @@ public class JDBCHelper {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			try {
+				if (pstmt != null && !pstmt.isClosed()){
+					pstmt.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
 			if(conn != null) {
 				try {
 					conn.close();
@@ -217,6 +233,14 @@ public class JDBCHelper {
 		} catch (Exception e) {
 			e.printStackTrace();  
 		} finally {
+			try {
+				if (pstmt != null && !pstmt.isClosed()){
+					pstmt.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
 			if(conn != null) {
 				try {
 					conn.close();

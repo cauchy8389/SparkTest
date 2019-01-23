@@ -7,11 +7,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.*;
+import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
@@ -28,11 +25,13 @@ import java.util.List;
  */
 public class SparkSQLEsWriterSchema {
     public static void main(String args[]) {
+        System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
+
         SparkConf conf = new SparkConf().setAppName("esh-spark").setMaster("local[4]");
         conf.set("es.index.auto.create", "true");
         JavaSparkContext context = new JavaSparkContext(conf);
 
-        JavaRDD<String> textFile = context.textFile("hdfs://localhost:9000/ch07/crimes_dataset.csv");
+        JavaRDD<String> textFile = context.textFile("hdfs://zhy.cauchy8389.com:9000/user/zhy/eshadoop/crimes_dataset.csv");
         SQLContext sqlContext = new SQLContext(context);
 
         List<StructField> fields = new ArrayList<>();
@@ -73,8 +72,9 @@ public class SparkSQLEsWriterSchema {
                         );
                     });
 
-        DataFrame df = sqlContext.createDataFrame(rowRDD, schema);
+        Dataset<Row> df = sqlContext.createDataFrame(rowRDD, schema);
         df.registerTempTable("crime");
+        //Dataset ds = df.as(RowEncoder.apply(schema));
         JavaEsSparkSQL.saveToEs(df, "esh_sparksql/crimes_schema");
     }
 

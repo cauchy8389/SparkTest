@@ -17,12 +17,14 @@ import java.util.Map;
  */
 public class SparkEsWriter {
     public static void main(String[] args) {
+        System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5");
 
         SparkConf conf = new SparkConf().setAppName("esh-spark").setMaster("local[4]");
         conf.set("es.index.auto.create", "true");
+        conf.set("es.nodes", "zhy.cauchy8389.com:9200");
         JavaSparkContext context = new JavaSparkContext(conf);
 
-        JavaRDD<String> textFile = context.textFile("hdfs://localhost:9000/ch07/crimes_dataset.csv");
+        JavaRDD<String> textFile = context.textFile("hdfs://zhy.cauchy8389.com:9000/user/zhy/eshadoop/crimes_dataset.csv");
 
         JavaRDD<Crime> dataSplits = textFile.map(line -> {
                 CSVParser parser = CSVParser.parse(line, CSVFormat.RFC4180);
