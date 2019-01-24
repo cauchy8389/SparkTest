@@ -270,10 +270,10 @@ public class UserVisitSessionAnalyzeSpark {
 //		return actionRDD.mapToPair(new PairFunction<Row, String, Row>() {
 //
 //			private static final long serialVersionUID = 1L;
-//			
+//
 //			@Override
 //			public Tuple2<String, Row> call(Row row) throws Exception {
-//				return new Tuple2<String, Row>(row.getString(2), row);  
+//				return new Tuple2<String, Row>(row.getString(2), row);
 //			}
 //			
 //		});
@@ -285,7 +285,7 @@ public class UserVisitSessionAnalyzeSpark {
 			@Override
 			public Iterator<Tuple2<String, Row>> call(Iterator<Row> iterator)
 					throws Exception {
-				List<Tuple2<String, Row>> list = new ArrayList<Tuple2<String, Row>>();
+				List<Tuple2<String, Row>> list = new ArrayList<>();
 				
 				while(iterator.hasNext()) {
 					Row row = iterator.next();
@@ -440,7 +440,7 @@ public class UserVisitSessionAnalyzeSpark {
 
 					@Override
 					public Tuple2<Long, Row> call(Row row) throws Exception {
-						return new Tuple2<Long, Row>(row.getLong(0), row);
+						return new Tuple2<>(row.getLong(0), row);
 					}
 					
 				});
@@ -485,7 +485,7 @@ public class UserVisitSessionAnalyzeSpark {
 								+ Constants.FIELD_CITY + "=" + city + "|"
 								+ Constants.FIELD_SEX + "=" + sex;
 						
-						return new Tuple2<String, String>(sessionid, fullAggrInfo);
+						return new Tuple2<>(sessionid, fullAggrInfo);
 					}
 					
 				});
@@ -537,251 +537,7 @@ public class UserVisitSessionAnalyzeSpark {
 //					
 //				});
 		
-		/**
-		 * sample采样倾斜key单独进行join
-		 */
-		
-//		JavaPairRDD<Long, String> sampledRDD = userid2PartAggrInfoRDD.sample(false, 0.1, 9);
-//		
-//		JavaPairRDD<Long, Long> mappedSampledRDD = sampledRDD.mapToPair(
-//				
-//				new PairFunction<Tuple2<Long,String>, Long, Long>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Tuple2<Long, Long> call(Tuple2<Long, String> tuple)
-//							throws Exception {
-//						return new Tuple2<Long, Long>(tuple._1, 1L);
-//					}
-//					
-//				});
-//		
-//		JavaPairRDD<Long, Long> computedSampledRDD = mappedSampledRDD.reduceByKey(
-//				
-//				new Function2<Long, Long, Long>() {
-//
-//					private static final long serialVersionUID = 1L;
-//		
-//					@Override
-//					public Long call(Long v1, Long v2) throws Exception {
-//						return v1 + v2;
-//					}
-//					
-//				});
-//		
-//		JavaPairRDD<Long, Long> reversedSampledRDD = computedSampledRDD.mapToPair(
-//				
-//				new PairFunction<Tuple2<Long,Long>, Long, Long>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Tuple2<Long, Long> call(Tuple2<Long, Long> tuple)
-//							throws Exception {
-//						return new Tuple2<Long, Long>(tuple._2, tuple._1);
-//					}
-//					
-//				});
-//		
-//		final Long skewedUserid = reversedSampledRDD.sortByKey(false).take(1).get(0)._2;  
-//		
-//		JavaPairRDD<Long, String> skewedRDD = userid2PartAggrInfoRDD.filter(
-//				
-//				new Function<Tuple2<Long,String>, Boolean>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Boolean call(Tuple2<Long, String> tuple) throws Exception {
-//						return tuple._1.equals(skewedUserid);
-//					}
-//					
-//				});
-//			
-//		JavaPairRDD<Long, String> commonRDD = userid2PartAggrInfoRDD.filter(
-//				
-//				new Function<Tuple2<Long,String>, Boolean>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Boolean call(Tuple2<Long, String> tuple) throws Exception {
-//						return !tuple._1.equals(skewedUserid);
-//					}
-//					
-//				});
-//		
-//		JavaPairRDD<String, Row> skewedUserid2infoRDD = userid2InfoRDD.filter(
-//				
-//				new Function<Tuple2<Long,Row>, Boolean>() {
-//
-//					private static final long serialVersionUID = 1L;
-//		
-//					@Override
-//					public Boolean call(Tuple2<Long, Row> tuple) throws Exception {
-//						return tuple._1.equals(skewedUserid);
-//					}
-//					
-//				}).flatMapToPair(new PairFlatMapFunction<Tuple2<Long,Row>, String, Row>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Iterable<Tuple2<String, Row>> call(
-//							Tuple2<Long, Row> tuple) throws Exception {
-//						Random random = new Random();
-//						List<Tuple2<String, Row>> list = new ArrayList<Tuple2<String, Row>>();
-//						
-//						for(int i = 0; i < 100; i++) {
-//							int prefix = random.nextInt(100);
-//							list.add(new Tuple2<String, Row>(prefix + "_" + tuple._1, tuple._2));
-//						}
-//						
-//						return list;
-//					}
-//					
-//				});
-//		
-//		JavaPairRDD<Long, Tuple2<String, Row>> joinedRDD1 = skewedRDD.mapToPair(
-//				
-//				new PairFunction<Tuple2<Long,String>, String, String>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Tuple2<String, String> call(Tuple2<Long, String> tuple)
-//							throws Exception {
-//						Random random = new Random();
-//						int prefix = random.nextInt(100);
-//						return new Tuple2<String, String>(prefix + "_" + tuple._1, tuple._2);
-//					}
-//					
-//				}).join(skewedUserid2infoRDD).mapToPair(
-//						
-//						new PairFunction<Tuple2<String,Tuple2<String,Row>>, Long, Tuple2<String, Row>>() {
-//
-//							private static final long serialVersionUID = 1L;
-//		
-//							@Override
-//							public Tuple2<Long, Tuple2<String, Row>> call(
-//									Tuple2<String, Tuple2<String, Row>> tuple)
-//									throws Exception {
-//								long userid = Long.valueOf(tuple._1.split("_")[1]);  
-//								return new Tuple2<Long, Tuple2<String, Row>>(userid, tuple._2);  
-//							}
-//							
-//						});
-//		
-//		JavaPairRDD<Long, Tuple2<String, Row>> joinedRDD2 = commonRDD.join(userid2InfoRDD);
-//		
-//		JavaPairRDD<Long, Tuple2<String, Row>> joinedRDD = joinedRDD1.union(joinedRDD2);
-//		
-//		JavaPairRDD<String, String> sessionid2FullAggrInfoRDD = joinedRDD.mapToPair(
-//				
-//				new PairFunction<Tuple2<Long,Tuple2<String,Row>>, String, String>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Tuple2<String, String> call(
-//							Tuple2<Long, Tuple2<String, Row>> tuple)
-//							throws Exception {
-//						String partAggrInfo = tuple._2._1;
-//						Row userInfoRow = tuple._2._2;
-//						
-//						String sessionid = StringUtils.getFieldFromConcatString(
-//								partAggrInfo, "\\|", Constants.FIELD_SESSION_ID);
-//						
-//						int age = userInfoRow.getInt(3);
-//						String professional = userInfoRow.getString(4);
-//						String city = userInfoRow.getString(5);
-//						String sex = userInfoRow.getString(6);
-//						
-//						String fullAggrInfo = partAggrInfo + "|"
-//								+ Constants.FIELD_AGE + "=" + age + "|"
-//								+ Constants.FIELD_PROFESSIONAL + "=" + professional + "|"
-//								+ Constants.FIELD_CITY + "=" + city + "|"
-//								+ Constants.FIELD_SEX + "=" + sex;
-//						
-//						return new Tuple2<String, String>(sessionid, fullAggrInfo);
-//					}
-//					
-//				});
-		
-		/**
-		 * 使用随机数和扩容表进行join
-		 */
-		
-//		JavaPairRDD<String, Row> expandedRDD = userid2InfoRDD.flatMapToPair(
-//				
-//				new PairFlatMapFunction<Tuple2<Long,Row>, String, Row>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Iterable<Tuple2<String, Row>> call(Tuple2<Long, Row> tuple)
-//							throws Exception {
-//						List<Tuple2<String, Row>> list = new ArrayList<Tuple2<String, Row>>();
-//						
-//						for(int i = 0; i < 10; i++) {
-//							list.add(new Tuple2<String, Row>(0 + "_" + tuple._1, tuple._2));
-//						}
-//						
-//						return list;
-//					}
-//					
-//				});
-//		
-//		JavaPairRDD<String, String> mappedRDD = userid2PartAggrInfoRDD.mapToPair(
-//				
-//				new PairFunction<Tuple2<Long,String>, String, String>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Tuple2<String, String> call(Tuple2<Long, String> tuple)
-//							throws Exception {
-//						Random random = new Random();
-//						int prefix = random.nextInt(10);
-//						return new Tuple2<String, String>(prefix + "_" + tuple._1, tuple._2);  
-//					}
-//					
-//				});
-//		
-//		JavaPairRDD<String, Tuple2<String, Row>> joinedRDD = mappedRDD.join(expandedRDD);
-//		
-//		JavaPairRDD<String, String> finalRDD = joinedRDD.mapToPair(
-//				
-//				new PairFunction<Tuple2<String,Tuple2<String,Row>>, String, String>() {
-//
-//					private static final long serialVersionUID = 1L;
-//
-//					@Override
-//					public Tuple2<String, String> call(
-//							Tuple2<String, Tuple2<String, Row>> tuple)
-//							throws Exception {
-//						String partAggrInfo = tuple._2._1;
-//						Row userInfoRow = tuple._2._2;
-//						
-//						String sessionid = StringUtils.getFieldFromConcatString(
-//								partAggrInfo, "\\|", Constants.FIELD_SESSION_ID);
-//						
-//						int age = userInfoRow.getInt(3);
-//						String professional = userInfoRow.getString(4);
-//						String city = userInfoRow.getString(5);
-//						String sex = userInfoRow.getString(6);
-//						
-//						String fullAggrInfo = partAggrInfo + "|"
-//								+ Constants.FIELD_AGE + "=" + age + "|"
-//								+ Constants.FIELD_PROFESSIONAL + "=" + professional + "|"
-//								+ Constants.FIELD_CITY + "=" + city + "|"
-//								+ Constants.FIELD_SEX + "=" + sex;
-//						
-//						return new Tuple2<String, String>(sessionid, fullAggrInfo);
-//					}
-//					
-//				});
+
 		
 		return sessionid2FullAggrInfoRDD;
 	}
@@ -1039,8 +795,7 @@ public class UserVisitSessionAnalyzeSpark {
 		 */
 		
 		// 将<yyyy-MM-dd_HH,count>格式的map，转换成<yyyy-MM-dd,<HH,count>>的格式
-		Map<String, Map<String, Long>> dateHourCountMap = 
-				new HashMap<String, Map<String, Long>>();
+		Map<String, Map<String, Long>> dateHourCountMap = new HashMap<>();
 		
 		for(Map.Entry<String, Long> countEntry : countMap.entrySet()) {
 			String dateHour = countEntry.getKey();
@@ -1072,8 +827,7 @@ public class UserVisitSessionAnalyzeSpark {
 		 * 将map做成广播变量
 		 * 
 		 */
-		Map<String, Map<String, List<Integer>>> dateHourExtractMap = 
-				new HashMap<String, Map<String, List<Integer>>>();
+		Map<String, Map<String, List<Integer>>> dateHourExtractMap = new HashMap<>();
 		
 		Random random = new Random();
 		
@@ -1088,7 +842,7 @@ public class UserVisitSessionAnalyzeSpark {
 			}
 			
 
-            dateHourExtractMap.putIfAbsent(date, new HashMap<String, List<Integer>>());
+            dateHourExtractMap.putIfAbsent(date, new HashMap<>());
             Map<String, List<Integer>> hourExtractMap = dateHourExtractMap.get(date);
 			
 			// 遍历每个小时
@@ -1122,8 +876,7 @@ public class UserVisitSessionAnalyzeSpark {
 		/*
 		 * fastutil的使用，很简单，比如List<Integer>的list，对应到fastutil，就是IntList
 		 */
-		Map<String, Map<String, IntList>> fastutilDateHourExtractMap = 
-				new HashMap<String, Map<String, IntList>>();
+		Map<String, Map<String, IntList>> fastutilDateHourExtractMap = new HashMap<>();
 		
 		
 		
@@ -1500,19 +1253,19 @@ public class UserVisitSessionAnalyzeSpark {
 							Tuple2<String, Row> tuple) throws Exception {
 						Row row = tuple._2;
 						
-						List<Tuple2<Long, Long>> list = new ArrayList<Tuple2<Long, Long>>();
+						List<Tuple2<Long, Long>> list = new ArrayList<>();
 						
 						Object clickCategoryId = row.get(6);
 						if(clickCategoryId != null) {
 							long clickcatId = row.getLong(6);
-							list.add(new Tuple2<Long, Long>(clickcatId, clickcatId));
+							list.add(new Tuple2<>(clickcatId, clickcatId));
 						}
 						
 						String orderCategoryIds = row.getString(8);
 						if(orderCategoryIds != null) {
 							String[] orderCategoryIdsSplited = orderCategoryIds.split(",");  
 							for(String orderCategoryId : orderCategoryIdsSplited) {
-								list.add(new Tuple2<Long, Long>(Long.valueOf(orderCategoryId),
+								list.add(new Tuple2<>(Long.valueOf(orderCategoryId),
 										Long.valueOf(orderCategoryId)));
 							}
 						}
@@ -1521,7 +1274,7 @@ public class UserVisitSessionAnalyzeSpark {
 						if(payCategoryIds != null) {
 							String[] payCategoryIdsSplited = payCategoryIds.split(",");  
 							for(String payCategoryId : payCategoryIdsSplited) {
-								list.add(new Tuple2<Long, Long>(Long.valueOf(payCategoryId),
+								list.add(new Tuple2<>(Long.valueOf(payCategoryId),
 										Long.valueOf(payCategoryId)));
 							}
 						}
@@ -1878,10 +1631,10 @@ public class UserVisitSessionAnalyzeSpark {
 						String orderCategoryIds = row.getString(8);
 						String[] orderCategoryIdsSplited = orderCategoryIds.split(",");  
 						
-						List<Tuple2<Long, Long>> list = new ArrayList<Tuple2<Long, Long>>();
+						List<Tuple2<Long, Long>> list = new ArrayList<>();
 						
 						for(String orderCategoryId : orderCategoryIdsSplited) {
-							list.add(new Tuple2<Long, Long>(Long.valueOf(orderCategoryId), 1L));  
+							list.add(new Tuple2<>(Long.valueOf(orderCategoryId), 1L));
 						}
 						
 						return list.iterator();
@@ -1942,7 +1695,7 @@ public class UserVisitSessionAnalyzeSpark {
 						List<Tuple2<Long, Long>> list = new ArrayList<Tuple2<Long, Long>>();
 						
 						for(String payCategoryId : payCategoryIdsSplited) {
-							list.add(new Tuple2<Long, Long>(Long.valueOf(payCategoryId), 1L));  
+							list.add(new Tuple2<>(Long.valueOf(payCategoryId), 1L));
 						}
 						
 						return list.iterator();
@@ -2081,7 +1834,7 @@ public class UserVisitSessionAnalyzeSpark {
 		 * 第一步：将top10热门品类的id，生成一份RDD
 		 */
 		List<Tuple2<Long, Long>> top10CategoryIdList = 
-				new ArrayList<Tuple2<Long, Long>>();
+				new ArrayList<>();
 		
 		for(Tuple2<CategorySortKey, String> category : top10CategoryList) {
             String str_categoryid = ParamUtils.getFieldFromConcatString(
@@ -2135,7 +1888,7 @@ public class UserVisitSessionAnalyzeSpark {
 						}
 						
 						// 返回结果，<categoryid,sessionid,count>格式
-						List<Tuple2<Long, String>> list = new ArrayList<Tuple2<Long, String>>();
+						List<Tuple2<Long, String>> list = new ArrayList<>();
 						
 						for(Map.Entry<Long, Long> categoryCountEntry : categoryCountMap.entrySet()) {
 							long categoryid = categoryCountEntry.getKey();
