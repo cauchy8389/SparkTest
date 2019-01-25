@@ -1,9 +1,15 @@
-package esspark;
+package mybean;
 
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -44,9 +50,8 @@ public class Crime implements Serializable {
     }
 
     public void setEventDate(String eventDate) throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy hh:mm");
-        Date date = format.parse(eventDate);
-        this.eventDate = date.getTime();
+        LocalDateTime datet = LocalDateTime.parse(eventDate, DateTimeFormatter.ofPattern("MM/dd/yy H:mm"));
+        this.eventDate = datet.toInstant(ZoneOffset.of("+0800")).getEpochSecond();
     }
 
     public void setEventDate(Long eventDate) {
@@ -116,4 +121,22 @@ public class Crime implements Serializable {
     public void setGeoLocation(Map<String, Double> geoLocation) {
         this.geoLocation = geoLocation;
     }
+
+    public String toString() {
+        return this.id + "\\t" + this.caseNumber + "\\t"
+                + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.ofEpochSecond(this.eventDate,0, ZoneOffset.of("+0800")));
+    }
+
+    public static void main(String[] args) {
+        String eventDate = "08/02/15 23:58";
+        LocalDateTime datet = LocalDateTime.parse(eventDate, DateTimeFormatter.ofPattern("MM/dd/yy HH:mm"));
+        System.out.println(datet.format(DateTimeFormatter.ISO_DATE_TIME));
+
+        String ddateStr = "08/02/15 23:58";
+        LocalDateTime ddate = LocalDateTime.parse(ddateStr, DateTimeFormatter.ofPattern("MM/dd/yy H:mm"));
+        System.out.println(ddate.format(DateTimeFormatter.ISO_DATE));
+
+        //Instant ins = ins.
+    }
+
 }

@@ -24,18 +24,18 @@ public class JDBCDataSource {
         //从jdbc中获取数据 mysql
         //需要指明 url   databases  table
         HashMap<String, String> options = new HashMap<>();
-        options.put("url", "jdbc:mysql://candle.hwua.com:3306/sqoop");
-        options.put("dbtable", "human2");
-        options.put("user", "hive");
-        options.put("password", "hive");
+        options.put("url", "jdbc:mysql://10.83.8.120:3306/crm");
+        options.put("dbtable", "ec_claim_2");
+        options.put("user", "cauchy8389");
+        options.put("password", "tn_cauchy8389");
         Dataset<Row> jdbc =
                 sqlContext.read().format("jdbc").options(options).load();
 
-        jdbc.registerTempTable("student");
+        jdbc.createOrReplaceTempView("ec");
 
         //一般企业中 这种从jdbc 中读取到dataframe  用法比较少用
         //需要用到例如 MySQL数据，直接在mysql去查询
-        Dataset<Row> sql = sqlContext.sql("select * from student where age >= 20");
+        Dataset<Row> sql = sqlContext.sql("select * from ec where Id < 500");
 
         sql.show();
 

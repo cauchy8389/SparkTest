@@ -1,5 +1,10 @@
 package SparkSqlJava;
 
+import mybean.Crime;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -8,7 +13,9 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/9/9.
@@ -27,24 +34,37 @@ public class RDDToDataFrameReflectionJava {
         SQLContext sqlContext = new SQLContext(javaSparkContext);
 
         //rdd
-        JavaRDD<String> stringJavaRDD = javaSparkContext.textFile("D:\\text.txt");
+        JavaRDD<String> stringJavaRDD = javaSparkContext.textFile("F:\\CodingResource\\eshadoop-master\\Chapter7\\data\\crimes_dataset.csv");
         //针对普通的RDD不能直接用spark sql 需要做一步转化
         //把rdd转化成dataframe
         //首先 需要针对字符串 进行处理 即逗号分开
         //把每一行的String  解析之后  封装到Student类中。
 
-        JavaRDD<Student> map = stringJavaRDD.map(
-                new Function<String, Student>() {
+        JavaRDD<Crime> map = stringJavaRDD.map(
+                new Function<String, Crime>() {
                     @Override
-                    public Student call(String v1) throws Exception {
-                        String[] split = v1.split(",");
-                        Student stu = new Student();
-                        //id
-                        stu.setId(Integer.valueOf(split[0].trim()));
-                        stu.setName(split[1]);
-                        stu.setAge(Integer.valueOf(split[2].trim()));
+                    public Crime call(String line) throws Exception {
+                        CSVParser parser = CSVParser.parse(line, CSVFormat.RFC4180);
+                        Crime c = new Crime();
+                        CSVRecord record = parser.getRecords().get(0);
+                        c.setId(record.get(0));
+                        c.setCaseNumber(record.get(1));
+                        c.setEventDate(record.get(2));
+                        c.setBlock(record.get(3));
+                        c.setIucr(record.get(4));
+                        c.setPrimaryType(record.get(5));
+                        c.setDescription(record.get(6));
+                        c.setLocation(record.get(7));
+                        c.setArrest(Boolean.parseBoolean(record.get(8)));
+                        c.setDomestic(Boolean.parseBoolean(record.get(9)));
+                        String lat = record.get(10);
+                        String lon = record.get(11);
 
-                        return stu;
+                        Map<String, Double> geoLocation = new HashMap<>();
+                        geoLocation.put("lat", StringUtils.isEmpty(lat)?null:Double.parseDouble(lat));
+                        geoLocation.put("lon", StringUtils.isEmpty(lon)?null:Double.parseDouble(lon));
+                        c.setGeoLocation(geoLocation);
+                        return c;
                     }
                 }
         );
@@ -55,12 +75,12 @@ public class RDDToDataFrameReflectionJava {
         def createDataFrame(rdd : org.apache.spark.api.java.JavaRDD[_],
         beanClass : scala.Predef.Class[_]) : org.apache.spark.sql.DataFrame
          */
-        Dataset<Row> dataFrame = sqlContext.createDataFrame(map, Student.class);
+        Dataset<Row> dataFrame = sqlContext.createDataFrame(map, Crime.class);
 
         //得到一个df之后，使用sql   首先把这个df注册成一张临时表
-        dataFrame.registerTempTable("Tab_student");
+        dataFrame.createOrReplaceTempView("crime");
         //select * from 表名
-        String sql = "select * from Tab_student where age <= 18";
+        String sql = "select * from crime where eventDate <= 1438522200000";
 
         //注意 查询的结果 返回 仍然是一个dataFrame
         Dataset<Row> sql1 = sqlContext.sql(sql);
@@ -74,11 +94,11 @@ public class RDDToDataFrameReflectionJava {
 
         //通过 df转化得到的rdd ，即javaRDD()。这个时候rdd中的存储每一行
         //都封装到了row类中。
-        JavaRDD<Student> map1 = rowJavaRDD.map(
-                new Function<Row, Student>() {
+        JavaRDD<Crime> map1 = rowJavaRDD.map(
+                new Function<Row, Crime>() {
                     @Override
-                    public Student call(Row v1) throws Exception {
-                        Student stu = new Student();
+                    public Crime call(Row v1) throws Exception {
+                        Crime cri = new Crime();
                         //申请大量对象，会增加gc 垃圾回收器负担
                         //row 每一行的成员获取的时候，两种形式
                         //一种是通过 位置来获取  一般不采用这种形式
@@ -88,19 +108,20 @@ public class RDDToDataFrameReflectionJava {
 //                        stu.setName(v1.getString(2));
 
                         //推荐 通过列名来获取  推荐使用这种方式
-                        stu.setId(v1.getAs("id"));
-                        stu.setName(v1.getAs("name"));
-                        stu.setAge(v1.getAs("age"));
+                        cri.setId(v1.getAs("id"));
+                        cri.setCaseNumber(v1.getAs("caseNumber"));
+                        Long eventDate  = v1.getAs("eventDate");
+                        cri.setEventDate(eventDate);
 
-                        return stu;
+                        return cri;
                     }
                 }
         );
 
         //后面是自定义的操作
-        List<Student> collect = map1.collect();
+        List<Crime> collect = map1.collect();
 
-        for(Student temp: collect) {
+        for(Crime temp: collect) {
             System.out.println(temp);
         }
 
