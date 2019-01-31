@@ -15,7 +15,7 @@ object UpdataStateByKeyWordCountScala {
 
     val ssc =   new StreamingContext(conf, Seconds(5))
 
-    ssc.checkpoint("hdfs://candle.hwua.com:9000/user/candle/spark/wd_checkpoint")
+    ssc.checkpoint("hdfs://zhy.cauchy8389.com:9000/user/zhy/spark/wd_checkpoint")
 
     val source = ssc.socketTextStream("candle.hwua.com", 9999)
 
