@@ -2,6 +2,7 @@ package mlib
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 
 object als1 {
@@ -49,8 +50,14 @@ object als1 {
     println("Mean Squared Error = " + MSE)
 
     //4 保存/加载模型
-    model.save(sc, "myModelPath")
-    val sameModel = MatrixFactorizationModel.load(sc, "myModelPath")
+    var modelPath = "hdfs://zhy.cauchy8389.com:9000/user/zhy/spark/mllib";
+    model.save(sc, modelPath)
+    val sameModel = MatrixFactorizationModel.load(sc, modelPath)
+
+//    val ss = SparkSession.builder.config(conf).getOrCreate
+//    val parquetFile = ss.read.parquet(modelPath + "/data/product/part-00000-e8c3333d-ce82-4cdb-b56a-77e0f39fd854-c000.snappy.parquet")
+//    parquetFile.take(100).foreach(println);
+
   }
 
 }
