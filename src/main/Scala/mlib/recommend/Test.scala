@@ -6,9 +6,9 @@ import org.apache.spark.rdd.RDD
 
 object ItemCF {
   def main(args: Array[String]) {
-
+    System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5")
     //0 构建Spark对象
-    val conf = new SparkConf().setAppName("ItemCF")
+    val conf = new SparkConf().setMaster("local").setAppName("ItemCF")
     val sc = new SparkContext(conf)
     Logger.getRootLogger.setLevel(Level.WARN)
 
@@ -19,7 +19,7 @@ object ItemCF {
 
     //2 建立模型
     val mysimil = new ItemSimilarity()
-    val simil_rdd1 = mysimil.Similarity(userdata, "cooccurrence")
+    val simil_rdd1 = mysimil.Similarity(userdata, "cosine")
     val recommd = new RecommendedItem
     val recommd_rdd1 = recommd.Recommend(simil_rdd1, userdata, 30)
 
