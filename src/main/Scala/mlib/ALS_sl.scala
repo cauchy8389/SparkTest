@@ -1,12 +1,10 @@
 package mlib
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.recommendation.{ALS, ALSModel}
-import org.apache.spark.sql.SparkSession
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
-import scala.collection.mutable.WrappedArray
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 
 object als2 {
@@ -43,29 +41,27 @@ object als2 {
       }
     }
 
-    val userRecs = model.recommendForAllUsers(10)
+    val userRecs:DataFrame = model.recommendForAllUsers(10)
     userRecs.foreach(row => {
         println(row(0) + ":")
         println(row(1))
 
-//        row(1).asInstanceOf[WrappedArray[List[(Int, Float)]]].foreach(aa =>{
-//          aa match {
-//            case List(item, rate) =>
-//              println(item, rate)
-//          }
-//        })
-//        var therow = row(1).asInstanceOf[WrappedArray[int,float]]
-//        therow.collect()
-//
-//        row(1) match {
-//          case therow:WrappedArray(Array[product,rating]) => {
-//
-//          }
-//        }
       }
     )
 
-    var ss = 1
+    val userArray:Array[Row] = userRecs.collect()
+    userArray.foreach(row => {
+      println(row.get(0) + ":")
+      val arrayPredict : Seq[Row] = row.getSeq(1)
+      arrayPredict.foreach(rowPredict =>{
+        println(rowPredict(0) + "@" + rowPredict(1))
+//        println(rowPredict.head.asInstanceOf[Row](0) + "@"
+//          + rowPredict.head.asInstanceOf[Row](1))
+      })
+
+    })
+
+    var ss : Option[Int] = Some(1)
     //    val ss = SparkSession.builder.config(conf).getOrCreate
     //    val parquetFile = ss.read.parquet(modelPath + "/data/product/part-00000-e8c3333d-ce82-4cdb-b56a-77e0f39fd854-c000.snappy.parquet")
     //    parquetFile.take(100).foreach(println);
