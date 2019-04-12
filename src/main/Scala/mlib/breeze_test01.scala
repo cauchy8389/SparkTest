@@ -1,10 +1,10 @@
-package book_code
+package mlib
 
-import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.{ SparkConf, SparkContext }
 import breeze.linalg._
 import breeze.numerics._
-import org.apache.spark.mllib.linalg.Vectors
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.ml.linalg.{Matrices, SparseMatrix}
 
 object breeze_test01 {
 
@@ -66,6 +66,13 @@ object breeze_test01 {
     m_3(1 to 2, 1 to 2) := 5.0
     m_3
 
+    val s_m_1 = Matrices.sparse(3, 3, Array(0, 3, 6, 6), Array(0, 1, 2, 0, 1, 2), Array(1,2,3,4,5,6))
+    print("s_m_1=")
+    println(s_m_1)
+    s_m_1.foreachActive((a,b,c) => {
+      println("a:" + a + ",b:" + b + ",c:" + c)
+    })
+
     val a_1 = DenseVector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
     a_1(1 to 4) := 5
     println(a_1)
@@ -77,7 +84,8 @@ object breeze_test01 {
     DenseMatrix.horzcat(a1, a2)
     val b1 = DenseVector(1, 2, 3, 4)
     val b2 = DenseVector(1, 1, 1, 1)
-    DenseVector.vertcat(b1, b2)
+    print("DenseVector.vertcat(b1, b2)=")
+    println(DenseVector.vertcat(b1, b2))
 
     // 3.1.3 Breeze 数值计算函数
     val a_3 = DenseMatrix((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))
@@ -104,8 +112,8 @@ object breeze_test01 {
     // 3.1.5 Breeze 布尔函数
     val a_5 = DenseVector(true, false, true)
     val b_5 = DenseVector(false, true, true)
-    a_5 :& b_5
-    a_5 :| b_5
+    a_5 &:& b_5
+    a_5 |:| b_5
     !a_5
     val a_5_2 = DenseVector(1.0, 0.0, -2.0)
     any(a_5_2)
@@ -117,6 +125,11 @@ object breeze_test01 {
     a_6 \ b_6
     a_6.t
     det(a_6)
+    print("det(a_6)")
+    println(det(a_6))
+    val b_7 = DenseMatrix((1.0, -3.0, 3.0), (3.0, -5.0, 3.0), (6.0, -6.0, 4.0))
+    print("det(b_7)")
+    println(det(b_7))
     inv(a_6)
     val svd.SVD(u, s, v) = svd(a_6)
     a_6.rows
