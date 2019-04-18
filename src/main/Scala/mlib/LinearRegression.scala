@@ -77,10 +77,11 @@ object LinearRegression {
     println(s"RMSE: ${trainingSummary.rootMeanSquaredError}")
     println(s"r2: ${trainingSummary.r2}")  // r2值越接近1越好
     // $example off$
+    // https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/ml/LinearRegressionExample.scala
 
     val predictions: DataFrame = lrModel.transform(vecDF_predict)
     println("预测输出预测结果")
-    val predict_result: DataFrame =predictions.selectExpr("features","Col1", "round(prediction,10) as prediction")
+    val predict_result: DataFrame = predictions.selectExpr("features","Col1", "round(prediction,10) as prediction")
     predict_result.foreach(println(_))
 
     spark.stop()
