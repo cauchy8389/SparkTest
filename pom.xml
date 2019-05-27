@@ -42,8 +42,6 @@
             <version>2.4.0-cdh6.1.0</version>
         </dependency>
 
-
-
         <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-mllib -->
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -64,7 +62,6 @@
             <artifactId>zookeeper</artifactId>
             <version>3.4.5</version>
         </dependency>
-
 
         <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-hive -->
         <!--<dependency>-->
@@ -93,11 +90,10 @@
             <version>2.1.1-cdh6.1.0</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.1.41</version>
+            <version>1.2.58</version>
         </dependency>
 
         <dependency>
