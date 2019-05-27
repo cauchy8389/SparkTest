@@ -27,7 +27,7 @@ public class JDBCDataSource {
         options.put("url", "jdbc:mysql://10.83.8.120:3306/crm?useSSL=false&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&serverTimezone=UTC");
         options.put("dbtable", "ec_vinmatch");
         options.put("user", "cauchy8389");
-        options.put("password", "tn_cauchy8389");
+        options.put("password", "xxxxxxx");
         Dataset<Row> jdbc =
                 sqlContext.read().format("jdbc").options(options).load();
 
