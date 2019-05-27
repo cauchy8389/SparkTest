@@ -24,8 +24,8 @@ public class JDBCDataSource {
         //从jdbc中获取数据 mysql
         //需要指明 url   databases  table
         HashMap<String, String> options = new HashMap<>();
-        options.put("url", "jdbc:mysql://10.83.8.120:3306/crm");
-        options.put("dbtable", "ec_claim_2");
+        options.put("url", "jdbc:mysql://10.83.8.120:3306/crm?useSSL=false&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&serverTimezone=UTC");
+        options.put("dbtable", "ec_vinmatch");
         options.put("user", "cauchy8389");
         options.put("password", "tn_cauchy8389");
         Dataset<Row> jdbc =
