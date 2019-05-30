@@ -1,7 +1,7 @@
 package SparkSQLScala
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 
 /**
   * Created by Administrator on 2018/9/9.
@@ -14,10 +14,9 @@ object CreateParquet {
     val conf  = new SparkConf()
     conf.setMaster("local")
     conf.setAppName("create df")
-    val sc = new SparkContext(conf)
+    val spark = SparkSession.builder().config(conf).getOrCreate()
 
-    val sqlContext = new  SQLContext(sc)
-    val df = sqlContext.read.parquet("E:\\person.parquet");
+    val df = spark.read.parquet("E:\\person.parquet");
 
     df.show()
 

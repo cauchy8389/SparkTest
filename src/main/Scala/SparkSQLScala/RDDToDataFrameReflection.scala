@@ -38,7 +38,7 @@ object RDDToDataFrameReflection {
       .map(strs => Student(strs(0).trim.toInt, strs(1), strs(2).trim.toInt))
       .toDF()
 
-    df.registerTempTable("Student")
+    df.createOrReplaceTempView("Student")
     val sql = "select * from Student  where age <= 18"
     val selectDF =   sqlContext.sql(sql)
 

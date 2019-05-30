@@ -29,7 +29,7 @@ object RDDToDFDynamicScala {
 
     val DF = sqlContext.createDataFrame(rowRDD ,st)
 
-    DF.registerTempTable("Student")
+    DF.createOrReplaceTempView("Student")
 
     val sql = "select * from Student"
     val DF2 = sqlContext.sql(sql)

@@ -1,6 +1,6 @@
 package SparkSQLScala
 
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -30,11 +30,9 @@ object MySparkSql {
     val conf  = new SparkConf()
     conf.setMaster("local")
     conf.setAppName("create df")
-    val sc = new SparkContext(conf)
 
-
-    //需要获取一个  SQLContext
-    val sqlContext = new  SQLContext(sc)
+    //需要获取一个  SparkSession
+    val spark = SparkSession.builder().config(conf).getOrCreate()
     //df DataFrame   从本地去读取一个json文本
     //val df = sqlContext.read.json("E:\\student.json")
     //sqlContext
@@ -44,7 +42,7 @@ object MySparkSql {
     //df.show()
 
     //从hdfs中读取
-    val df = sqlContext.read.json("hdfs://candle.hwua.com:9000/user/candle/spark/student.json")
+    val df = spark.read.json("hdfs://candle.hwua.com:9000/user/candle/spark/student.json")
     df.show()
 
     //spark sql  如果执行sql语句
