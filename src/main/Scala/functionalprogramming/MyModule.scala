@@ -76,8 +76,9 @@ object MyModule {
     (a, b) => f(a)(b)
 
   def tfunc(a:Int, b:String) : Double = {
-    if (b == "double")
+    if (b.equals("double"))
       Double.MinValue
-    Double.MaxValue
+    else
+      Double.MaxValue
   }
 }
