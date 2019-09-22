@@ -44,6 +44,30 @@ object DoDataStructures {
 
     println("reverse:" + reverse(lsd))
 
-    println("foldRightViaFoldLeft:" + foldRightViaFoldLeft(lsd))
+    println("foldRightViaFoldLeft:" + foldRightViaFoldLeft(lsd, 0.0)((i, j) => (i + j)))
+    println("foldRightViaFoldLeft_1:" + foldRightViaFoldLeft_1(lsd, 0.0)((i, j) => (i + j)))
+    println("foldLeftViaFoldRight:" + foldLeftViaFoldRight(lsd, 0.0)((i, j) => (i + j)))
+    println("appendViaFoldRight:" + appendViaFoldRight(List(1,2,3),List(4,5,6)))
+
+    println("concat:" + concat(List(List(1,2,3),List(4,5,6))))
+    println("add1:" + add1(List(1,2,3,4)))
+    println("doubleToString:" + doubleToString(List(1,2,3,4)))
+
+    println("map:" + map(List(1,2,3,4))(i => i + 1.0))
+    println("filter:" + filter(List(1,2,3,4))(i => i % 2 == 0))
+    println("flatMap:" + flatMap(List(1,2,3,4))(i => {
+        val buf = new collection.mutable.ListBuffer[Double]
+        for (j <- 0 to i) {
+          buf += j
+        }
+        List(buf.toList: _*)
+      }
+    ))
+    println("addPairwise: " + addPairwise(List(1,2,3),List(4,5,6)))
+
+    println("zipWith: " + zipWith(List(1,2,3),List(4,5,6))((a,b) => {
+        a.toString + ":" + b.toString
+      }
+    ))
   }
 }
