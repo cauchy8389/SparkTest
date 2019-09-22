@@ -64,10 +64,11 @@ object DoDataStructures {
       }
     ))
     println("addPairwise: " + addPairwise(List(1,2,3),List(4,5,6)))
-
     println("zipWith: " + zipWith(List(1,2,3),List(4,5,6))((a,b) => {
         a.toString + ":" + b.toString
       }
     ))
+    println("startsWith: " + startsWith(List(1,2,3),List(1,2)))
+    println("hasSubsequence: " + hasSubsequence(List(1,2,3),List(2,3)))
   }
 }
