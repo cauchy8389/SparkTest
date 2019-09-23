@@ -1,9 +1,10 @@
 package functionalprogramming.datastructures
 
-import functionalprogramming.datastructures.List._
-
 object DoDataStructures {
+
   def main(args: Array[String]): Unit = {
+    import functionalprogramming.datastructures.List._
+
     val ls = List(1,2,3,4,5,6)
     println(sum(ls))
 
@@ -70,5 +71,21 @@ object DoDataStructures {
     ))
     println("startsWith: " + startsWith(List(1,2,3),List(1,2)))
     println("hasSubsequence: " + hasSubsequence(List(1,2,3),List(2,3)))
+
+    println("--Tree----Tree----Tree----Tree----Tree----Tree-----------")
+
+    import functionalprogramming.datastructures.Tree._
+
+    val tree1 = Branch(Branch(Leaf(1),Branch(Leaf(2),Leaf(5))), Leaf(6))
+    println("size:" +  Tree.size(tree1))
+    println("\"A\"+:\"B\": " + ("A" +: "B"))
+    println("maximum:" +  maximum(tree1))
+    println("depth:" +  Tree.depth(tree1))
+    println("map:" +  Tree.map(tree1)(i => i+1.0))
+    println("fold:" +  Tree.fold(tree1)(i => i+1.0)((a,b) => a+b))
+    println("sizeViaFold:" +  sizeViaFold(tree1))
+    println("maximumViaFold:" +  maximumViaFold(tree1))
+    println("depthViaFold:" +  depthViaFold(tree1))
+    println("mapViaFold:" +  mapViaFold(tree1)(i => i+1.0))
   }
 }
