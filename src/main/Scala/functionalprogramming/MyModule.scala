@@ -10,6 +10,12 @@ object MyModule {
     msg.format(x, abs(x))
   }
 
+  def sum(args: Int*)= {
+    var result = 0
+    for (arg <- args) result += arg
+    result
+  }
+
   def main(args: Array[String]): Unit = {
     println(formatAbs(-42))
 
@@ -18,6 +24,8 @@ object MyModule {
     println(curry(tfunc)(1)("double"))
 
     println(uncurry((x:Int) => (y:Int) => x + y)(1, 2))
+
+    println(sum(1 to 5: _*))
   }
 
   // A definition of factorial, using a local, tail recursive function
