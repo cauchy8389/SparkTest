@@ -1,7 +1,8 @@
 package functionalprogramming.state
 
 trait RNG {
-  def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
+  def
+  nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
 }
 
 object RNG {
@@ -163,8 +164,8 @@ import State._
 case class State[S, +A](run: S => (A, S)) {
   def map[B](f: A => B): State[S, B] =
     flatMap(a => unit(f(a)))
-  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
-    flatMap(a => sb.map(b => f(a, b)))
+//  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+//    flatMap(a => sb.map(b => f(a, b)))
   def flatMap[B](f: A => State[S, B]): State[S, B] = State(s => {
     val (a, s1) = run(s)
     f(a).run(s1)
@@ -178,8 +179,8 @@ object State {
     State(s => (a, s))
 
   // The idiomatic solution is expressed via foldRight
-  def sequenceViaFoldRight[S,A](sas: List[State[S, A]]): State[S, List[A]] =
-    sas.foldRight(unit[S, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
+//  def sequenceViaFoldRight[S,A](sas: List[State[S, A]]): State[S, List[A]] =
+//    sas.foldRight(unit[S, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
 
   // This implementation uses a loop internally and is the same recursion
   // pattern as a left fold. It is quite common with left folds to build
@@ -201,8 +202,8 @@ object State {
   // technically has to also walk the list twice, since it has to unravel the call
   // stack, not being tail recursive. And the call stack will be as tall as the list
   // is long.
-  def sequenceViaFoldLeft[S,A](l: List[State[S, A]]): State[S, List[A]] =
-    l.reverse.foldLeft(unit[S, List[A]](List()))((acc, f) => f.map2(acc)( _ :: _ ))
+//  def sequenceViaFoldLeft[S,A](l: List[State[S, A]]): State[S, List[A]] =
+//    l.reverse.foldLeft(unit[S, List[A]](List()))((acc, f) => f.map2(acc)( _ :: _ ))
 
   def modify[S](f: S => S): State[S, Unit] = for {
     s <- get // Gets the current state and assigns it to `s`.
@@ -232,9 +233,16 @@ object Candy {
         Machine(true, candy - 1, coin)
     }
 
+  /**
+    * 这里compose很巧妙 update 为 Input => Machine => Machine
+    * 传入modify 为 Machine => Machine
+    * modify 接受也是f: S => S
+    * @param inputs
+    * @return
+    */
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
     _ <- sequence(inputs map (modify[Machine] _ compose update))
     s <- get
-  } yield (s.coins, s.candies)
+  } yield (s.candies, s.coins)
 }
 
