@@ -1,7 +1,6 @@
 package functionalprogramming.parallelism
 
 import java.util.concurrent.{Callable, CountDownLatch, ExecutorService}
-import java.util.concurrent.atomic.AtomicReference
 import language.implicitConversions
 
 object Nonblocking {
@@ -193,5 +192,20 @@ object Nonblocking {
       def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
       def zip[B](b: Par[B]): Par[(A,B)] = p.map2(b)((_,_))
     }
+
+
+  }
+
+  import functionalprogramming.parallelism.Nonblocking.Par.{parMap, run}
+  def main(args: Array[String]): Unit = {
+    val p = parMap(List.range(1, 10000))(math.sqrt(_))
+
+    import java.util.concurrent.Executors
+    val x = run(Executors.newFixedThreadPool(2))(p)
+
+    println(x)
+    println("parMap-end")
+
+    import akka.actor
   }
 }
