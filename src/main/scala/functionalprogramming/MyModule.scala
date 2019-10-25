@@ -26,6 +26,14 @@ object MyModule {
     println(uncurry((x:Int) => (y:Int) => x + y)(1, 2))
 
     println(sum(1 to 5: _*))
+
+    def fun : Int => Unit = {
+      case x if x % 2 == 0 => println(0)
+      case y if y % 2 == 1 => println(1)
+    }
+
+    fun(2)
+    fun(3)
   }
 
   // A definition of factorial, using a local, tail recursive function
