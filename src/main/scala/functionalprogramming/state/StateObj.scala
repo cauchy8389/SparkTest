@@ -40,7 +40,7 @@ object StateObj {
 
     println(Candy.simulateMachine(List(Coin,Turn,Coin)).run(Machine(true,5,5)))
 
-    println("RNG -----------------:" + RNG.Simple(34).nextInt)
+    println("RNG -----------------:" + RNG.Simple(86).nextInt)
 
     def unit: Testor[Int] = Testor(0)
 
@@ -49,7 +49,7 @@ object StateObj {
 
       //def flatMap[U](f: T => Testor[U]): Testor[U] = f(value)
 
-      def foreach[U](f: (T) => U): U = f(value)
+      def foreach[U](f: T => U): U = f(value)
     }
 
     def get[S >: Int]: Testor[S] = Testor(1)
