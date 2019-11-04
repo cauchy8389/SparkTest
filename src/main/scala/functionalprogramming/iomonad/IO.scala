@@ -151,6 +151,10 @@ object IO1 {
       } yield () }
     }
   )
+
+//  def main(args: Array[String]): Unit = {
+//    factorialREPL
+//  }
 }
 
 
@@ -237,12 +241,6 @@ object IO2aTests {
         (x: Int) => IO.suspend(a(x).flatMap(b))
       }
     }
-
-  def main(args: Array[String]): Unit = {
-    val gFortyTwo = g(42)
-    println("g(42) = " + gFortyTwo)
-    println("run(g(42)) = " + run(gFortyTwo))
-  }
 }
 
 
@@ -303,6 +301,8 @@ object IO2bTests {
     val gFortyTwo = g(42)
     println("g(42) = " + gFortyTwo)
     println("run(g(42)) = " + run(gFortyTwo))
+
+    IO1.factorialREPL.run
   }
 }
 
