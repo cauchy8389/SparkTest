@@ -300,7 +300,10 @@ object SimpleStreamTransducers {
      */
     def sum: Process[Double,Double] = {
       def go(acc: Double): Process[Double,Double] =
-        await(d => emit(d+acc, go(d+acc)))
+        await(d => {
+          println(d+acc)
+          emit(d+acc, go(d+acc))
+        })
       go(0.0)
     }
 
@@ -1044,7 +1047,8 @@ object GeneralizedStreamTransducers {
     type Channel[F[_],I,O] = Process[F, I => Process[F,O]]
 
     /*
-     * Here is an example, a JDBC query runner which returns the
+     * Here is an example, a JDBC query r
+     * unner which returns the
      * stream of rows from the result set of the query. We have
      * the channel take a `Connection => PreparedStatement` as
      * input, so code that uses this channel does not need to be
@@ -1122,31 +1126,35 @@ object GeneralizedStreamTransducers {
   }
 }
 
-//object ProcessTest extends App {
-//  import GeneralizedStreamTransducers._
-//  import functionalprogramming.iomonad.IO
-//  import Process._
-//
-//  val p = eval(IO { println("woot"); 1 }).repeat
-//  val p2 = eval(IO { println("cleanup"); 2 } ).onHalt {
-//    case Kill => println { "cleanup was killed, instead of bring run" }; Halt(Kill)
-//    case e => Halt(e)
-//  }
-//
-//  println { Process.runLog { p2.onComplete(p2).onComplete(p2).take(1).take(1) } }
-//  println { Process.runLog(converter) }
-//  println { Process.convertAll }
-//
-//  scala.io.Source.fromFile("D:/WorkData/scaladata/fahrenheits.txt").getLines().foreach(println(_))
-//
-//  println(Process.runLog(convertMultisink))
-//}
-
-object ProcessTest2 extends App {
-  import SimpleStreamTransducers._
+object ProcessTest extends App {
+  import GeneralizedStreamTransducers._
+  import functionalprogramming.iomonad.IO
   import Process._
-  val s = sum(Stream(1.0,2.0,3.0,4.0)).toList
-  println(s)
 
-  println(take(2).apply(Stream(1.0,2.0,3.0,4.0)).toList)
+  val p = eval(IO { println("woot"); 1 }).repeat
+  val p2 = eval(IO { println("cleanup"); 2 } ).onHalt {
+    case Kill => println { "cleanup was killed, instead of bring run" }; Halt(Kill)
+    case e => Halt(e)
+  }
+
+  println { Process.runLog { p2.onComplete(p2).onComplete(p2).take(1).take(1) } }
+  println { Process.runLog(converter) }
+  println { Process.convertAll }
+
+  scala.io.Source.fromFile("D:/WorkData/scaladata/fahrenheits.txt").getLines().foreach(println(_))
+
+  println(Process.runLog(convertMultisink))
 }
+
+//object ProcessTest2 extends App {
+//  import SimpleStreamTransducers._
+//  import Process._
+//  val s = sum(Stream(1.0,2.0,3.0,4.0)).toList
+//  println(s)
+//
+//  println(take(2).apply(Stream(1.0,2.0,3.0,4.0)).toList)
+//
+//  def numsFrom(n: Int): Stream[Int] = n #:: numsFrom(n + 1)
+//  val umf = numsFrom(10)
+//  println(umf.tail.take(15).head)
+//}
