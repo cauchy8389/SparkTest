@@ -125,10 +125,10 @@ object breeze_test01 {
     a_6 \ b_6
     a_6.t
     det(a_6)
-    print("det(a_6)")
+    print("det(a_6):")
     println(det(a_6))
     val b_7 = DenseMatrix((1.0, -3.0, 3.0), (3.0, -5.0, 3.0), (6.0, -6.0, 4.0))
-    print("det(b_7)")
+    print("det(b_7):")
     println(det(b_7))
     inv(a_6)
     val svd.SVD(u, s, v) = svd(a_6)
@@ -139,8 +139,10 @@ object breeze_test01 {
     val a_7 = DenseVector(1.2, 0.6, -2.3)
     round(a_7)
     ceil(a_7)
-    floor(a_7)
-    signum(a_7)
+    print("floor(a_7):")
+    println(floor(a_7))
+    print("signum(a_7):")
+    println(signum(a_7))
     abs(a_7)
 
   }

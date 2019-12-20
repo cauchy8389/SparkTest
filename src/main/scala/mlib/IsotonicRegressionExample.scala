@@ -42,7 +42,7 @@ object IsotonicRegressionExample {
     println(s"Predictions associated with the boundaries length: ${model.predictions.size}\n")
 
     // Makes predictions.
-    model.transform(dataset).show()
+    model.transform(dataset).show(100)
     // $example off$
 
     spark.stop()
