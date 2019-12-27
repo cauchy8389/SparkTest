@@ -5,6 +5,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.ml.feature.VectorIndexer
 import org.apache.spark.sql.SparkSession
 
+import scala.collection.immutable.SortedSet
+
 object svm {
 
   def main(args: Array[String]) {
@@ -13,7 +15,7 @@ object svm {
     //1 构建Spark对象
     val conf = new SparkConf().setMaster("local").setAppName("VectorIndexerExample")
     val spark = SparkSession.builder().config(conf).getOrCreate()
-    spark.sparkContext.setCheckpointDir("hdfs://zhy.cauchy8389.com:9000/user/zhy/spark/wd_checkpoint")
+    spark.sparkContext.setCheckpointDir("hdfs://192.168.1.51:9000/user/zhy/spark/wd_checkpoint")
     Logger.getRootLogger.setLevel(Level.WARN)
 
 //    // 读取样本数据1，格式为LIBSVM format
@@ -50,12 +52,12 @@ object svm {
 
 
     // $example on$
-    val data = spark.read.format("libsvm").load("file:///E:/download/MLlib机器学习/数据/sample_libsvm_data2.txt")
+    val data = spark.read.format("libsvm").load("file:///F:/download/MLlib机器学习/数据/sample_libsvm_data.txt")
 
     val indexer = new VectorIndexer()
       .setInputCol("features")
       .setOutputCol("indexed")
-      .setMaxCategories(10)
+      .setMaxCategories(6)
 
     val indexerModel = indexer.fit(data)
 
@@ -63,10 +65,16 @@ object svm {
     println(s"Chose ${categoricalFeatures.size} " +
       s"categorical features: ${categoricalFeatures.mkString(", ")}")
 
+    println(s"sorted categorical features:${categoricalFeatures.toList.sorted.mkString(", ")}")
+
     // Create new column "indexed" with categorical values transformed to indices
     val indexedData = indexerModel.transform(data)
     indexedData.show()
     // $example off$
+    println("indexed:")
+    indexedData.select("indexed").collect().foreach(x=>println(x))
+    println("features:")
+    indexedData.select("features").collect().foreach(x=>println(x))
 
     spark.stop()
   }

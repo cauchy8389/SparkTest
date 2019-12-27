@@ -15,11 +15,11 @@ object tree {
     //1 构建Spark对象
     val conf = new SparkConf().setMaster("local").setAppName("DecisionTree")
     val spark = SparkSession.builder().config(conf).getOrCreate()
-    spark.sparkContext.setCheckpointDir("hdfs://zhy.cauchy8389.com:9000/user/zhy/spark/wd_checkpoint")
+    spark.sparkContext.setCheckpointDir("hdfs://192.168.1.51:9000/user/zhy/spark/wd_checkpoint")
     Logger.getRootLogger.setLevel(Level.WARN)
 
     // 读取样本数据1，格式为LIBSVM format
-    val data = spark.read.format("libsvm").load("file:///E:/download/MLlib机器学习/数据/sample_libsvm_data2.txt")
+    val data = spark.read.format("libsvm").load("file:///F:/download/MLlib机器学习/数据/sample_libsvm_data.txt")
     // Automatically identify categorical features, and index them.
     // Here, we treat features with > 4 distinct values as continuous.
     val featureIndexer = new VectorIndexer()
@@ -49,7 +49,7 @@ object tree {
     // Select example rows to display.
     predictions.select("prediction", "label", "features").show(50)
     //predictions.write.json("file:///D:/WorkSpace/good.json");
-    predictions.write.json("file:///D:/WorkSpace/result000000")
+    predictions.write.json("file:///D:/WorkData/result000000")
     predictions.printSchema();
 
     // Select (prediction, true label) and compute test error.
