@@ -2,7 +2,8 @@ package mlib
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
-import org.apache.spark.ml.feature.VectorIndexer
+import org.apache.spark.ml.feature.{MinMaxScaler, VectorIndexer}
+import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.immutable.SortedSet
@@ -75,6 +76,30 @@ object svm {
     indexedData.select("indexed").collect().foreach(x=>println(x))
     println("features:")
     indexedData.select("features").collect().foreach(x=>println(x))
+
+    //-----------start MinMaxScaler---------------------------------------------------------------------
+
+    val dataFrame = spark.createDataFrame(Seq(
+      (0, Vectors.dense(1.0)),
+      (1, Vectors.dense(2.0)),
+      (2, Vectors.dense(99.0))
+    )).toDF("id", "features")
+
+    val scaler = new MinMaxScaler()
+      .setInputCol("features")
+      .setOutputCol("scaledFeatures")
+      .setMin(0)
+      .setMax(1)
+
+    // Compute summary statistics and generate MinMaxScalerModel
+    val scalerModel = scaler.fit(dataFrame)
+
+    // rescale each feature to range [min, max].
+    val scaledData = scalerModel.transform(dataFrame)
+    println(s"Features scaled to range: [${scaler.getMin}, ${scaler.getMax}]")
+    scaledData.select("features", "scaledFeatures").show()
+
+    //-----------end MinMaxScaler----------------------------
 
     spark.stop()
   }

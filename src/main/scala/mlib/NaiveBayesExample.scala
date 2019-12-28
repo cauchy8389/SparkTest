@@ -2,8 +2,10 @@ package mlib
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
+import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.VectorIndexer
 import org.apache.spark.sql.SparkSession
 
 object NaiveBayesExample {
@@ -18,13 +20,27 @@ object NaiveBayesExample {
     // Load the data stored in LIBSVM format as a DataFrame.
     val data = spark.read.format("libsvm").load("file:///F:/download/MLlib机器学习/数据/sample_libsvm_naive_bayes.txt")
 
+    val indexer = new VectorIndexer()
+      .setInputCol("features")
+      .setOutputCol("indexed")
+      .setMaxCategories(6)
+
     // Split the data into training and test sets (30% held out for testing)
     val Array(trainingData, testData) = data.randomSplit(Array(0.7, 0.3), seed = 1234L)
 
     // Train a NaiveBayes model.
-    val model = new NaiveBayes()
-      .fit(trainingData)
+    val naiveBayes = new NaiveBayes()
+    //.fit(trainingData)
 
+    val pipeline = new Pipeline()
+      .setStages(Array(indexer, naiveBayes))
+
+    val model = pipeline.fit(trainingData)
+
+    println("--------original data----------")
+    data.show()
+    println("-------test data-----")
+    testData.show()
     // Select example rows to display.
     val predictions = model.transform(testData)
     predictions.show()
