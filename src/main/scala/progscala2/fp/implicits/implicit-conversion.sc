@@ -7,7 +7,7 @@ case class IntegralString(val str: String) {
    * If true, then calling `toInt` or `toLong` will work, unless there
    * are too many digits.
    */
-  def isIntegral: Boolean = intRE.matches(str)
+  def isIntegral: Boolean = intRE.pattern.matcher(str).matches
 }
 
 object String2IntegralString {
