@@ -28,12 +28,15 @@ val r4 = List(1,2,3,4,5,6) reduceOption (_ * _)
 assert(r4 == Some(720))
 
 
-val arr = List(List(1, 2, 3), List(3, 4, 5), List(2), List(0))
+val arr = List(List(1, 2, 3, 4), List(3, 4, 5), List(2), List(0))
 println(
-  arr.par.aggregate(0)(
+  arr.aggregate(0)(
     (a,b) => {
       println("a=" + a + ":b=" + b)
-      a + b.reduce(_ + _)
+      a + b.reduce((ba,bb) => {
+        println("ba=" + ba + ":bb=" + bb)
+        ba + bb
+      })
     }, (m, n) => {
       println("m=" + m + ":n=" + n)
       m + n
@@ -41,7 +44,7 @@ println(
   )
 )
 println(
-  arr.aggregate(10)(
+  arr.par.aggregate(10)(
     (a,b) => {
       println("a=" + a + ":b=" + b)
       a + b.reduce(_ + _)
