@@ -6,8 +6,7 @@ import progscala2.typesystem.higherkinded.{Add, Reduce}    // <1>
 import progscala2.typesystem.higherkinded.Add._
 import progscala2.typesystem.higherkinded.Reduce._
 
-def sum[T : Add, M[T]](container: M[T])(                   // <2>
-  implicit red: Reduce[T,M]): T =
+def sum[T : Add, M[T]](container: M[T])(implicit red: Reduce[T,M]): T = // <2>
     red.reduce(container)(implicitly[Add[T]].add(_,_))
 
 assert(sum(Vector(1 -> 10, 2 -> 20, 3 -> 30)) == (6 -> 60))
