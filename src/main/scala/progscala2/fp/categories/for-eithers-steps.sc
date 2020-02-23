@@ -1,9 +1,18 @@
 // src/main/scala/progscala3/fp/categories/for-eithers-steps.sc
-import scala.util.{ Either, Left, Right }
+import scala.util.{Either, Left, Right}
 
 // Example of using Either handling on an arbitrarily-long
 // sequence of functions that return Either[X,Int]. When the sequence
 // is arbitrary, you can't use a for comprehension.
+
+
+implicit final class EitherShip[+E, +A](val self: Either[E, A]) {
+  def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] =
+    self match {
+      case Left(e) => Left(e)
+      case Right(a) => f(a)
+    }
+}
 
 // Alias the long function signature:
 type Step = Int => Either[RuntimeException,Int]

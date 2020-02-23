@@ -1,7 +1,7 @@
 // src/main/scala/progscala3/fp/categories/Monad.sc
 // Use the following if you don't use -language:higherKinds
 // import scala.language.higherKinds                                 // <1>
-import progscala3.fp.categories._
+import progscala2.fp.categories._
 
 val seqf: Int => Seq[Int] = i => 1 to i
 val optf: Int => Option[Int] = i => Option(i + 1)
