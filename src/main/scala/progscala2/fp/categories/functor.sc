@@ -1,7 +1,7 @@
 // src/main/scala/progscala3/fp/categories/Functor.sc
 // Use the following if you don't use -language:higherKinds
 // import scala.language.higherKinds                         // <1>
-import progscala3.fp.categories._
+import progscala2.fp.categories._
 
 val fii: Int => Int       = i => i * 2
 val fid: Int => Double    = i => 2.1 * i
