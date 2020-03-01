@@ -32,6 +32,7 @@ class ServerActor extends Actor with ActorLogging {                  // <1>
   val initial: Receive = {                                           // <5>
     case Start(numberOfWorkers) =>
       workers = ((1 to numberOfWorkers) map makeWorker).toVector
+      // 非become 则processRequests中的case语句没有上升到主层级，则无法运行
       context become processRequests                                 // <6>
   }
 
