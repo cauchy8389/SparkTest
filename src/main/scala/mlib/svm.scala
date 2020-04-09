@@ -14,7 +14,7 @@ object svm {
     System.setProperty("hadoop.home.dir", "E:\\hadoop-2.6.0-cdh5.8.5")
 
     //1 构建Spark对象
-    val conf = new SparkConf().setMaster("local").setAppName("VectorIndexerExample")
+    val conf = new SparkConf().setMaster("local").setAppName("SVMExample")
     val spark = SparkSession.builder().config(conf).getOrCreate()
     spark.sparkContext.setCheckpointDir("hdfs://192.168.1.51:9000/user/zhy/spark/wd_checkpoint")
     Logger.getRootLogger.setLevel(Level.WARN)
