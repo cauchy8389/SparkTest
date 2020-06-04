@@ -91,12 +91,12 @@ object breeze_test01 {
     val a_3 = DenseMatrix((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))
     val b_3 = DenseMatrix((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))
     a_3 + b_3
-    a_3 *:* b_3
-    a_3 /:/ b_3
-    a_3 <:< b_3
-    a_3 :== b_3
-    a_3 :+= 1.0
-    a_3 :*= 2.0
+    println(a_3 *:* b_3) //元素乘法
+    println(a_3 /:/ b_3) //元素除法
+    println(a_3 <:< b_3) //元素比较
+    println(a_3 :== b_3) //元素想等
+    println(a_3 :+= 1.0) //元素追加
+    println(a_3 :*= 2.0) //元素追乘
     max(a_3)
     argmax(a_3)
     DenseVector(1, 2, 3, 4) dot DenseVector(1, 1, 1, 1)
