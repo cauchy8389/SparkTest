@@ -13,9 +13,9 @@ object ItemCF {
     Logger.getRootLogger.setLevel(Level.WARN)
 
     //1 读取样本数据
-    val data_path = "E:\\download\\MLlib机器学习\\数据\\sample_itemcf2.txt"
+    val data_path = "file:///F:/download/MLlib机器学习/数据/sample_itemcf2.txt"
     val data = sc.textFile(data_path)
-    val userdata = data.map(_.split(",")).map(f => (ItemPref(f(0), f(1), f(2).toDouble))).cache()
+    val userdata = data.map(_.split(",")).map(f => ItemPref(f(0), f(1), f(2).toDouble)).cache()
 
     //2 建立模型
     val mysimil = new ItemSimilarity()
