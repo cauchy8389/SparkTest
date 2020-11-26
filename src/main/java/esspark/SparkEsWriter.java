@@ -14,7 +14,7 @@ import java.util.Map;
 import org.apache.spark.api.java.function.Function;
 
 /**
- * Created by vishalshukla on 14/08/15.
+ * Created by zhy on 2020/11/26.
  */
 public class SparkEsWriter {
     static Function<String,Crime> funcMap = line -> {
