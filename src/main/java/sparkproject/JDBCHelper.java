@@ -1,9 +1,11 @@
 package sparkproject;
 
-import java.beans.PropertyVetoException;
-import java.sql.*;
+import com.alibaba.druid.pool.DruidDataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 /**
  * JDBC辅助组件
@@ -18,7 +20,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  */
 public class JDBCHelper {
 
-	private ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource();
+	private DruidDataSource druidPooledDataSource = new DruidDataSource();
 
 	private static class JDBCHelperInstance {
 		private static final JDBCHelper instance = new JDBCHelper();
@@ -51,24 +53,23 @@ public class JDBCHelper {
 		String jdbcUrl = ConfigurationManager.getProperty(Constants.PDS_JDBCURL);
 		String user = ConfigurationManager.getProperty(Constants.PDS_USER);
 		String password = ConfigurationManager.getProperty(Constants.PDS_PASSWORD);
-		int maxIdleTime = ConfigurationManager.getInteger(Constants.PDS_MAXIDLETIME);
-		int maxPoolSize = ConfigurationManager.getInteger(Constants.PDS_MAXPOOLSIZE);
-		int minPoolSize = ConfigurationManager.getInteger(Constants.PDS_MINPOOLSIZE);
-		int initialPoolSize = ConfigurationManager.getInteger(Constants.PDS_INITIALPOOLSIZE);
+		int minIdle = ConfigurationManager.getInteger(Constants.PDS_MINIDLE);
+		int maxActive = ConfigurationManager.getInteger(Constants.PDS_MAXACTIVE);
+		int maxWait = ConfigurationManager.getInteger(Constants.PDS_MAXWAIT);
+		int initialSize = ConfigurationManager.getInteger(Constants.PDS_INITIALSIZE);
 
-		comboPooledDataSource.setMaxPoolSize(maxPoolSize);
-		try {
-			comboPooledDataSource.setDriverClass(driverClass);
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-		}
-		comboPooledDataSource.setJdbcUrl(jdbcUrl);
-		comboPooledDataSource.setUser(user);
-		comboPooledDataSource.setPassword(password);
-		comboPooledDataSource.setMinPoolSize(minPoolSize);
-		comboPooledDataSource.setMaxIdleTime(maxIdleTime);
-		comboPooledDataSource.setInitialPoolSize(initialPoolSize);
-		//comboPooledDataSource.
+
+		druidPooledDataSource.setDriverClassName(driverClass);
+		druidPooledDataSource.setUrl(jdbcUrl);
+		druidPooledDataSource.setUsername(user);
+		druidPooledDataSource.setPassword(password);
+		druidPooledDataSource.setMaxActive(maxActive);
+		druidPooledDataSource.setMaxWait(maxWait);
+		druidPooledDataSource.setMinIdle(minIdle);
+		druidPooledDataSource.setInitialSize(initialSize);
+
+		druidPooledDataSource.setPoolPreparedStatements(true); //缓存PreparedStatement，默认false
+		druidPooledDataSource.setMaxOpenPreparedStatements(20);
 	}
 	
 	/**
@@ -78,7 +79,7 @@ public class JDBCHelper {
 	 * 
 	 */
 	public synchronized Connection getConnection() throws SQLException {
-		return comboPooledDataSource.getConnection();
+		return druidPooledDataSource.getConnection();
 	}
 	
 	/**

@@ -11,10 +11,10 @@ public interface Constants {
 	String PDS_JDBCURL = "pds.jdbcUrl";
 	String PDS_USER = "pds.user";
 	String PDS_PASSWORD = "pds.password";
-	String PDS_MAXPOOLSIZE = "pds.maxPoolSize";
-	String PDS_MAXIDLETIME = "pds.maxIdleTime";
-	String PDS_MINPOOLSIZE = "pds.minPoolSize";
-	String PDS_INITIALPOOLSIZE = "pds.initialPoolSize";
+	String PDS_INITIALSIZE = "pds.initialSize";
+	String PDS_MAXACTIVE = "pds.maxActive";
+	String PDS_MINIDLE = "pds.minIdle";
+	String PDS_MAXWAIT = "pds.maxWait";
 
 	/**
 	 * 项目配置相关的常量
