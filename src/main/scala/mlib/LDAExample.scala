@@ -40,7 +40,10 @@ object LDAExample {
       .setMaxIter(50)
     val model = lda.fit(dataset)
 
+    //模型的评价指标：ogLikelihood，logPerplexity
+    //（1）根据训练集的模型分布计算的log likelihood，越大越好。
     val ll = model.logLikelihood(dataset)
+    //（2）Perplexity评估，越小越好
     val lp = model.logPerplexity(dataset)
     println(s"The lower bound on the log likelihood of the entire corpus: $ll")
     println(s"The upper bound on perplexity: $lp")
@@ -50,6 +53,16 @@ object LDAExample {
     val topics = model.describeTopics(3)
     println("The topics described by their top-weighted terms:")
     topics.show(false)
+
+    /**主题    主题包含最重要的词语序号                     各词语的权重
+        +-----+-------------+------------------------------------------+
+        |topic|termIndices  |termWeights                               |
+        +-----+-------------+------------------------------------------+
+        |0    |[5, 4, 0, 1] |[0.21169509638828377, 0.19142090510443274]|
+        |1    |[5, 6, 1, 2] |[0.12521929515791688, 0.10175547561034966]|
+        |2    |[3, 10, 6, 9]|[0.19885345685860667, 0.18794498802657686]|
+        +-----+-------------+------------------------------------------+
+      */
 
     //（2） topicsMatrix: 主题-词分布，相当于phi。
     println("Learned topics (as distributions over vocab of " + model.vocabSize + " words):")
@@ -69,6 +82,16 @@ object LDAExample {
     // Shows the result.
     val transformed = model.transform(dataset)
     transformed.show(false)
+    /** label是文档序号 文档中各主题的权重
+        +-----+--------------------------------------------------------------+
+        |label|topicDistribution                                             |
+        +-----+--------------------------------------------------------------+
+        |0.0  |[0.523730754859981,0.006564444943344147,0.46970480019667477]  |
+        |1.0  |[0.7825074858166653,0.011001204994496623,0.206491309188838]   |
+        |2.0  |[0.2085069748527087,0.005698459472719417,0.785794565674572]   |
+        ...
+
+      */
     // $example off$
 
     spark.stop()
