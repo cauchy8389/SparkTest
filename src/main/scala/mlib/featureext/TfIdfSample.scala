@@ -1,7 +1,7 @@
 package mlib.featureext
 
 // $example on$
-import org.apache.spark.ml.feature.{HashingTF, IDF, OneHotEncoderEstimator, Tokenizer}
+import org.apache.spark.ml.feature.{HashingTF, IDF, OneHotEncoderEstimator, Tokenizer, VectorAssembler}
 // $example off$
 import org.apache.spark.sql.SparkSession
 /**
@@ -27,11 +27,12 @@ object TfIdfSample{
     val wordsData = tokenizer.transform(sentenceData)
 
     val hashingTF = new HashingTF()
-      .setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(10)
+      .setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(16)
 
     val featurizedData = hashingTF.transform(wordsData)
     // alternatively, CountVectorizer can also be used to get term frequency vectors
     featurizedData.select("label", "rawFeatures").show(false)
+    featurizedData.show(false)
 
 
     val doc = spark.createDataFrame(Seq(
@@ -90,6 +91,10 @@ object TfIdfSample{
 
     val encoded = model.transform(df)
     encoded.show()
+
+    val va = new VectorAssembler().setInputCols(Array("categoryVec1", "categoryVec2")).setOutputCol("features")
+    val df1 = va.transform(encoded)
+    df1.show(false)
 
     encoded.foreach(x=>{
       val ary = x.get(3)
