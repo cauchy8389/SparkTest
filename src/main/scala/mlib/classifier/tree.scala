@@ -1,10 +1,11 @@
+package mlib.classifier
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.VectorIndexer
-import org.apache.spark.ml.regression.DecisionTreeRegressionModel
-import org.apache.spark.ml.regression.DecisionTreeRegressor
+import org.apache.spark.ml.regression.{DecisionTreeRegressionModel, DecisionTreeRegressor}
 import org.apache.spark.sql.SparkSession
 
 object tree {
@@ -47,10 +48,10 @@ object tree {
     val predictions = model.transform(testData)
 
     // Select example rows to display.
-    predictions.select("prediction", "label", "features").show(50)
+    predictions.select("prediction", "label", "features").show(50, false)
     //predictions.write.json("file:///D:/WorkSpace/good.json");
     predictions.write.json("file:///D:/WorkData/result000000")
-    predictions.printSchema();
+    predictions.printSchema()
 
     // Select (prediction, true label) and compute test error.
     val evaluator = new RegressionEvaluator()

@@ -1,4 +1,4 @@
-package mlib
+package mlib.classifier
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
